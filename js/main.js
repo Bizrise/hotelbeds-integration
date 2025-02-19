@@ -39,8 +39,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Send Data to Make.com Webhook ---
     // Replace the URL below with your actual Make.com webhook URL
-    fetch("https://hook.eu2.make.com/ysx4ybh6k9wotufodihtwgrywwf6d9nv
-", {
+    fetch("https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", {
       method: "POST",
       headers: {
         "Content-Type": "application/json"
