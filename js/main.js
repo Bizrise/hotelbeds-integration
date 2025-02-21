@@ -61,10 +61,12 @@ document.addEventListener('DOMContentLoaded', () => {
       if (contentType && contentType.includes('application/json')) {
         return response.text().then(text => {
           try {
-            // Attempt to parse the response text as JSON, handling potential extra quotes or malformed data
-            let data = text.trim(); // Remove any whitespace
+            // Attempt to parse the response text as JSON, handling extra quotes, whitespace, or malformed data
+            let data = text.trim(); // Remove leading/trailing whitespace
+            // Remove surrounding quotes if present and unescape any escaped quotes or backslashes
             if (data.startsWith('"') && data.endsWith('"')) {
-              data = data.slice(1, -1); // Remove surrounding quotes if present
+              data = data.slice(1, -1); // Remove outer quotes
+              data = data.replace(/\\"/g, '"').replace(/\\\\/g, '\\'); // Unescape quotes and backslashes
             }
             const parsedData = JSON.parse(data);
             return Array.isArray(parsedData) ? parsedData : []; // Ensure data is an array
