@@ -3,21 +3,24 @@ document.addEventListener('DOMContentLoaded', () => {
   // Reference the form and results section
   const form = document.getElementById('hotelSearchForm');
   const resultsSection = document.getElementById('results');
+  const destinationInput = document.getElementById('destination');
+  
+  // Set a placeholder text to guide the user
+  destinationInput.placeholder = "Type your city like: Dubai: DXB";
 
   form.addEventListener('submit', function(event) {
     event.preventDefault(); // Prevent page reload
 
     // --- Gather User Inputs ---
-    const destinationInput = document.getElementById('destination').value.trim();
+    const destinationValue = destinationInput.value.trim();
     const checkin = document.getElementById('checkin').value;
     const checkout = document.getElementById('checkout').value;
     const travellers = document.getElementById('travellers').value;
 
-    // --- Parse and Validate Destination Input (e.g., "Dubai: DXB") ---
+    // --- Parse and Validate Destination Input ---
     let destinationCode;
-    const parts = destinationInput.split(':').map(part => part.trim().toUpperCase());
+    const parts = destinationValue.split(':').map(part => part.trim().toUpperCase());
     if (parts.length === 2 && /^[A-Z]{3}$/.test(parts[1])) {
-      // Extract the 3-letter code (e.g., "DXB" from "Dubai: DXB")
       destinationCode = parts[1];
     } else {
       alert("Please enter a valid city and code in the format 'City: XXX' (e.g., 'Dubai: DXB', 'London: LON', 'Paris: PAR').");
@@ -38,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Prepare Data Payload for Make.com ---
     const requestData = {
-      destination: destinationCode, // Now sends "DXB," "LON," etc., instead of "Dubai"
+      destination: destinationCode,
       checkin,
       checkout,
       travellers,
@@ -49,7 +52,6 @@ document.addEventListener('DOMContentLoaded', () => {
     resultsSection.innerHTML = "<p>Loading results...</p>";
 
     // --- Send Data to Make.com Webhook ---
-    // Replace the URL below with your actual Make.com webhook URL
     fetch("https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", {
       method: "POST",
       headers: {
