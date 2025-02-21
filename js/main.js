@@ -4,7 +4,6 @@ document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('hotelSearchForm');
   const resultsSection = document.getElementById('results');
 
-  // Add form submission event listener
   form.addEventListener('submit', function(event) {
     event.preventDefault(); // Prevent page reload
 
@@ -83,7 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
       } else if (Array.isArray(data)) { // Check if data is an array (29.data.hotels.hotels)
         if (data.length > 0) {
           data.forEach(hotel => {
-            // Extract the first room and find the cheapest rate for simplicity
+            // Extract the first room and find the cheapest rate for exact results
             const firstRoom = hotel.rooms[0];
             const cheapestRate = firstRoom.rates.reduce((min, rate) => rate.net < min.net ? rate : min, firstRoom.rates[0]);
             const price = cheapestRate.net;
