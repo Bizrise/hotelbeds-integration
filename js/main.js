@@ -61,9 +61,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (contentType && contentType.includes('application/json')) {
         return response.text().then(text => {
           try {
-            // Attempt to parse the response text as JSON
-            const data = JSON.parse(text);
-            return data; // Return the parsed JSON array
+            // Attempt to parse the response text as JSON, handling potential empty or malformed responses
+            const data = text ? JSON.parse(text) : [];
+            return Array.isArray(data) ? data : []; // Ensure data is an array
           } catch (parseError) {
             throw new Error(`Failed to parse JSON: ${parseError.message}. Response text: ${text}`);
           }
@@ -79,27 +79,23 @@ document.addEventListener('DOMContentLoaded', () => {
       let htmlContent = "<h2>Hotel Search Results:</h2>";
       if (data.error) {
         htmlContent += `<p>${data.error}</p>`;
-      } else if (Array.isArray(data)) { // Check if data is an array (29.data.hotels.hotels)
-        if (data.length > 0) {
-          data.forEach(hotel => {
-            // Extract the first room and find the cheapest rate for exact results
-            const firstRoom = hotel.rooms[0];
-            const cheapestRate = firstRoom.rates.reduce((min, rate) => rate.net < min.net ? rate : min, firstRoom.rates[0]);
-            const price = cheapestRate.net;
-            const availability = cheapestRate.allotment > 0 ? "Available" : "Not Available";
-            htmlContent += `
-              <div class="hotel">
-                <h3>${hotel.name}</h3>
-                <p>Price: ${price} EUR</p>
-                <p>Availability: ${availability}</p>
-              </div>
-            `;
-          });
-        } else {
-          htmlContent += "<p>No hotels found for your criteria.</p>";
-        }
+      } else if (Array.isArray(data) && data.length > 0) {
+        data.forEach(hotel => {
+          // Extract the first room and find the cheapest rate for exact results
+          const firstRoom = hotel.rooms[0];
+          const cheapestRate = firstRoom.rates.reduce((min, rate) => rate.net < min.net ? rate : min, firstRoom.rates[0]);
+          const price = cheapestRate.net || "N/A";
+          const availability = cheapestRate.allotment > 0 ? "Available" : "Not Available";
+          htmlContent += `
+            <div class="hotel">
+              <h3>${hotel.name || "Unknown Hotel"}</h3>
+              <p>Price: ${price} EUR</p>
+              <p>Availability: ${availability}</p>
+            </div>
+          `;
+        });
       } else {
-        htmlContent += "<p>No hotels found for your criteria or invalid response format.</p>";
+        htmlContent += "<p>No hotels found for your criteria.</p>";
       }
       resultsSection.innerHTML = htmlContent;
     })
