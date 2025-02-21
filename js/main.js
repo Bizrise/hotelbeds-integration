@@ -8,15 +8,19 @@ document.addEventListener('DOMContentLoaded', () => {
     event.preventDefault(); // Prevent page reload
 
     // --- Gather User Inputs ---
-    const destination = document.getElementById('destination').value.trim().toUpperCase(); // Convert to uppercase for consistency
+    const destinationInput = document.getElementById('destination').value.trim();
     const checkin = document.getElementById('checkin').value;
     const checkout = document.getElementById('checkout').value;
     const travellers = document.getElementById('travellers').value;
 
-    // --- Validate Destination Code ---
-    // Ensure destination is a 3-letter code (e.g., DXB, LON, PAR)
-    if (!/^[A-Z]{3}$/.test(destination)) {
-      alert("Please enter a valid 3-letter city code (e.g., DXB for Dubai, LON for London, PAR for Paris).");
+    // --- Parse and Validate Destination Input (e.g., "Dubai: DXB") ---
+    let destinationCode;
+    const parts = destinationInput.split(':').map(part => part.trim().toUpperCase());
+    if (parts.length === 2 && /^[A-Z]{3}$/.test(parts[1])) {
+      // Extract the 3-letter code (e.g., "DXB" from "Dubai: DXB")
+      destinationCode = parts[1];
+    } else {
+      alert("Please enter a valid city and code in the format 'City: XXX' (e.g., 'Dubai: DXB', 'London: LON', 'Paris: PAR').");
       return;
     }
 
@@ -34,7 +38,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Prepare Data Payload for Make.com ---
     const requestData = {
-      destination,
+      destination: destinationCode, // Now sends "DXB," "LON," etc., instead of "Dubai"
       checkin,
       checkout,
       travellers,
