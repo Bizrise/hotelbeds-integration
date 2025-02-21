@@ -8,10 +8,17 @@ document.addEventListener('DOMContentLoaded', () => {
     event.preventDefault(); // Prevent page reload
 
     // --- Gather User Inputs ---
-    const destination = document.getElementById('destination').value.trim();
+    const destination = document.getElementById('destination').value.trim().toUpperCase(); // Convert to uppercase for consistency
     const checkin = document.getElementById('checkin').value;
     const checkout = document.getElementById('checkout').value;
     const travellers = document.getElementById('travellers').value;
+
+    // --- Validate Destination Code ---
+    // Ensure destination is a 3-letter code (e.g., DXB, LON, PAR)
+    if (!/^[A-Z]{3}$/.test(destination)) {
+      alert("Please enter a valid 3-letter city code (e.g., DXB for Dubai, LON for London, PAR for Paris).");
+      return;
+    }
 
     // --- Validate Dates ---
     const checkinDate = new Date(checkin);
