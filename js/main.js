@@ -3,27 +3,19 @@ document.addEventListener('DOMContentLoaded', () => {
   // Reference the form and results section
   const form = document.getElementById('hotelSearchForm');
   const resultsSection = document.getElementById('results');
-  const destinationInput = document.getElementById('destination');
-  
-  // Set a placeholder text to guide the user
-  destinationInput.placeholder = "Type your city like: Dubai: DXB";
 
   form.addEventListener('submit', function(event) {
     event.preventDefault(); // Prevent page reload
 
     // --- Gather User Inputs ---
-    const destinationValue = destinationInput.value.trim();
+    const destinationInput = document.getElementById('destination').value.trim().toUpperCase();
     const checkin = document.getElementById('checkin').value;
     const checkout = document.getElementById('checkout').value;
     const travellers = document.getElementById('travellers').value;
 
-    // --- Parse and Validate Destination Input ---
-    let destinationCode;
-    const parts = destinationValue.split(':').map(part => part.trim().toUpperCase());
-    if (parts.length === 2 && /^[A-Z]{3}$/.test(parts[1])) {
-      destinationCode = parts[1];
-    } else {
-      alert("Please enter a valid city and code in the format 'City: XXX' (e.g., 'Dubai: DXB', 'London: LON', 'Paris: PAR').");
+    // --- Validate Destination Input ---
+    if (!/^[A-Z]{3}$/.test(destinationInput)) {
+      alert("Please enter a valid three-letter airport code (e.g., DXB, LON, PAR).");
       return;
     }
 
@@ -41,7 +33,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Prepare Data Payload for Make.com ---
     const requestData = {
-      destination: destinationCode,
+      destination: destinationInput, // Ensuring only the code is sent
       checkin,
       checkout,
       travellers,
