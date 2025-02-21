@@ -4,6 +4,7 @@ document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('hotelSearchForm');
   const resultsSection = document.getElementById('results');
 
+  // Add form submission event listener
   form.addEventListener('submit', function(event) {
     event.preventDefault(); // Prevent page reload
 
@@ -22,8 +23,8 @@ document.addEventListener('DOMContentLoaded', () => {
     // --- Validate Dates ---
     const checkinDate = new Date(checkin);
     const checkoutDate = new Date(checkout);
-    if (checkoutDate <= checkinDate) {
-      alert("Check-out date must be after check-in date.");
+    if (isNaN(checkinDate.getTime()) || isNaN(checkoutDate.getTime()) || checkoutDate <= checkinDate) {
+      alert("Please enter valid dates, with check-out after check-in.");
       return;
     }
 
@@ -33,7 +34,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
     // --- Prepare Data Payload for Make.com ---
     const requestData = {
-      destination: destinationInput, // Ensuring only the code is sent
+      destination: destinationInput,
       checkin,
       checkout,
       travellers,
@@ -51,28 +52,61 @@ document.addEventListener('DOMContentLoaded', () => {
       },
       body: JSON.stringify(requestData)
     })
-    .then(response => response.json())
+    .then(response => {
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        return response.text().then(text => {
+          try {
+            // Attempt to parse the response text as JSON
+            const data = JSON.parse(text);
+            return data; // Return the parsed JSON array
+          } catch (parseError) {
+            throw new Error(`Failed to parse JSON: ${parseError.message}. Response text: ${text}`);
+          }
+        });
+      } else {
+        return response.text().then(text => {
+          throw new Error(`Expected JSON, got: ${text}`);
+        });
+      }
+    })
     .then(data => {
       // --- Process the Response from Make.com ---
       let htmlContent = "<h2>Hotel Search Results:</h2>";
-      if (data && data.hotels && data.hotels.length) {
-        data.hotels.forEach(hotel => {
-          htmlContent += `
-            <div class="hotel">
-              <h3>${hotel.name}</h3>
-              <p>Price: ${hotel.price}</p>
-              <p>Availability: ${hotel.availability}</p>
-            </div>
-          `;
-        });
+      if (data.error) {
+        htmlContent += `<p>${data.error}</p>`;
+      } else if (Array.isArray(data)) { // Check if data is an array (29.data.hotels.hotels)
+        if (data.length > 0) {
+          data.forEach(hotel => {
+            // Extract the first room and find the cheapest rate for simplicity
+            const firstRoom = hotel.rooms[0];
+            const cheapestRate = firstRoom.rates.reduce((min, rate) => rate.net < min.net ? rate : min, firstRoom.rates[0]);
+            const price = cheapestRate.net;
+            const availability = cheapestRate.allotment > 0 ? "Available" : "Not Available";
+            htmlContent += `
+              <div class="hotel">
+                <h3>${hotel.name}</h3>
+                <p>Price: ${price} EUR</p>
+                <p>Availability: ${availability}</p>
+              </div>
+            `;
+          });
+        } else {
+          htmlContent += "<p>No hotels found for your criteria.</p>";
+        }
       } else {
-        htmlContent += "<p>No hotels found for your criteria.</p>";
+        htmlContent += "<p>No hotels found for your criteria or invalid response format.</p>";
       }
       resultsSection.innerHTML = htmlContent;
     })
     .catch(error => {
       console.error("Error:", error);
-      resultsSection.innerHTML = "<p>An error occurred while fetching hotel data.</p>";
+      resultsSection.innerHTML = `<p>An error occurred while fetching hotel data. Please try again later. Details: ${error.message}</p>`;
     });
   });
 });
