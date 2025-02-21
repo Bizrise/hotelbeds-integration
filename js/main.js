@@ -51,17 +51,38 @@ document.addEventListener('DOMContentLoaded', () => {
       },
       body: JSON.stringify(requestData)
     })
-    .then(response => response.json())
+    .then(response => {
+      console.log('Response status:', response.status);
+      console.log('Response headers:', response.headers);
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      // Check if the response is JSON by looking at Content-Type
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.includes('application/json')) {
+        return response.json();
+      } else {
+        return response.text().then(text => {
+          throw new Error(`Expected JSON, got: ${text}`);
+        });
+      }
+    })
     .then(data => {
       // --- Process the Response from Make.com ---
       let htmlContent = "<h2>Hotel Search Results:</h2>";
-      if (data && data.hotels && data.hotels.length) {
-        data.hotels.forEach(hotel => {
+      if (data.error) {
+        htmlContent += `<p>${data.error}</p>`;
+      } else if (data && data.length) { // Now data is 29.data.hotels.hotels
+        data.forEach(hotel => {
+          const firstRoom = hotel.rooms[0];
+          const firstRate = firstRoom.rates[0];
+          const price = firstRate.net;
+          const availability = firstRate.allotment > 0 ? "Available" : "Not Available";
           htmlContent += `
             <div class="hotel">
               <h3>${hotel.name}</h3>
-              <p>Price: ${hotel.price}</p>
-              <p>Availability: ${hotel.availability}</p>
+              <p>Price: ${price} EUR</p>
+              <p>Availability: ${availability}</p>
             </div>
           `;
         });
@@ -72,7 +93,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .catch(error => {
       console.error("Error:", error);
-      resultsSection.innerHTML = "<p>An error occurred while fetching hotel data.</p>";
+      resultsSection.innerHTML = `<p>An error occurred while fetching hotel data. Please try again later. Details: ${error.message}</p>`;
     });
   });
 });
