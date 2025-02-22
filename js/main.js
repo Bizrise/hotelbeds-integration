@@ -41,7 +41,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Show "Waiting" or "Loading" message while Make.com processes
     resultsSection.innerHTML = "<p>Waiting for hotel results... <span class='loading'>Loading...</span></p>";
 
-    // Send data to Make.com and wait for the final response
+    // Send data to Make.com and handle the response flexibly
     fetch("https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", { // Replace with your actual webhook URL
       method: "POST",
       headers: {
@@ -55,10 +55,9 @@ document.addEventListener('DOMContentLoaded', () => {
       if (!response.ok) {
         if (response.status === 202) { // Handle 202 Accepted (asynchronous response)
           return new Promise((resolve) => {
-            // Poll or wait for the final response (simplified polling for demo)
             let attempts = 0;
-            const maxAttempts = 10; // Try up to 10 times (adjust as needed)
-            const delay = 1000; // Check every 1 second
+            const maxAttempts = 20; // Increase attempts to wait longer (adjust as needed)
+            const delay = 2000; // Check every 2 seconds for better reliability
 
             const poll = () => {
               if (attempts >= maxAttempts) {
@@ -96,7 +95,7 @@ document.addEventListener('DOMContentLoaded', () => {
                   attempts++;
                   setTimeout(poll, delay);
                 } else {
-                  throw new Error(`HTTP error! status: ${pollResponse.status}`);
+                  throw new Error(`HTTP error! status: ${pollResponse.status} - ${pollResponse.statusText}`);
                 }
               })
               .catch(error => {
@@ -107,7 +106,7 @@ document.addEventListener('DOMContentLoaded', () => {
             poll();
           });
         } else {
-          throw new Error(`HTTP error! status: ${response.status}`);
+          throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
         }
       }
       const contentType = response.headers.get('content-type');
@@ -125,8 +124,10 @@ document.addEventListener('DOMContentLoaded', () => {
             throw new Error(`Failed to parse JSON: ${parseError.message}. Response text: ${text}`);
           }
         });
+      } else if (contentType) {
+        throw new Error(`Expected JSON, got: ${contentType}`);
       } else {
-        throw new Error(`Expected JSON, got: ${response.statusText}`);
+        throw new Error(`Expected JSON, got: no content-type`);
       }
     })
     .then(data => {
@@ -217,7 +218,7 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 // Optional: Add loading animation CSS in styles.css for better visuals
-// Add this to your styles.css if not already included:
+// Ensure this is in your styles.css:
 const styles = `
   .loading {
     font-style: italic;
