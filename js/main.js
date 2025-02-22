@@ -38,9 +38,10 @@ document.addEventListener('DOMContentLoaded', () => {
       nights
     };
 
-    resultsSection.innerHTML = "<p>Loading results...</p>";
+    // Show "Waiting" or "Loading" message while Make.com processes
+    resultsSection.innerHTML = "<p>Waiting for hotel results... <span class='loading'>Loading...</span></p>";
 
-    // Send data to Make.com using the webhook URL
+    // Send data to Make.com and wait for the final response
     fetch("https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", { // Replace with your actual webhook URL
       method: "POST",
       headers: {
@@ -52,7 +53,62 @@ document.addEventListener('DOMContentLoaded', () => {
       console.log('Response status:', response.status);
       console.log('Response headers:', response.headers);
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status}`);
+        if (response.status === 202) { // Handle 202 Accepted (asynchronous response)
+          return new Promise((resolve) => {
+            // Poll or wait for the final response (simplified polling for demo)
+            let attempts = 0;
+            const maxAttempts = 10; // Try up to 10 times (adjust as needed)
+            const delay = 1000; // Check every 1 second
+
+            const poll = () => {
+              if (attempts >= maxAttempts) {
+                throw new Error("Timeout waiting for Make.com response");
+              }
+
+              fetch("https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", { // Same webhook URL
+                method: "POST",
+                headers: {
+                  "Content-Type": "application/json"
+                },
+                body: JSON.stringify(requestData)
+              })
+              .then(pollResponse => {
+                if (pollResponse.ok && pollResponse.status === 200) {
+                  const contentType = pollResponse.headers.get('content-type');
+                  if (contentType && contentType.includes('application/json')) {
+                    return pollResponse.text().then(text => {
+                      try {
+                        let data = text.trim();
+                        if (data.startsWith('"') && data.endsWith('"')) {
+                          data = data.slice(1, -1).replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+                        }
+                        const parsedData = JSON.parse(data);
+                        resolve({ hotels: parsedData.hotels || [], images: parsedData.images || [] });
+                      } catch (parseError) {
+                        console.log('Raw response text:', text);
+                        throw new Error(`Failed to parse JSON: ${parseError.message}. Response text: ${text}`);
+                      }
+                    });
+                  } else {
+                    throw new Error(`Expected JSON, got: ${pollResponse.statusText}`);
+                  }
+                } else if (pollResponse.status === 202) {
+                  attempts++;
+                  setTimeout(poll, delay);
+                } else {
+                  throw new Error(`HTTP error! status: ${pollResponse.status}`);
+                }
+              })
+              .catch(error => {
+                throw new Error(`Polling error: ${error.message}`);
+              });
+            };
+
+            poll();
+          });
+        } else {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
       }
       const contentType = response.headers.get('content-type');
       if (contentType && contentType.includes('application/json')) {
@@ -70,9 +126,7 @@ document.addEventListener('DOMContentLoaded', () => {
           }
         });
       } else {
-        return response.text().then(text => {
-          throw new Error(`Expected JSON, got: ${text}`);
-        });
+        throw new Error(`Expected JSON, got: ${response.statusText}`);
       }
     })
     .then(data => {
@@ -161,3 +215,23 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   });
 });
+
+// Optional: Add loading animation CSS in styles.css for better visuals
+// Add this to your styles.css if not already included:
+const styles = `
+  .loading {
+    font-style: italic;
+    color: #666;
+    animation: pulse 1.5s infinite;
+  }
+
+  @keyframes pulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+  }
+`;
+
+const styleSheet = document.createElement('style');
+styleSheet.textContent = styles;
+document.head.appendChild(styleSheet);
