@@ -11,16 +11,19 @@ document.addEventListener('DOMContentLoaded', () => {
     const checkout = document.getElementById('checkout').value;
     const travellers = document.getElementById('travellers').value;
 
-    // Validate the 4 sections to ensure they’re correct, like Booking.com
+    // Validate the 4 sections, ensuring Check-in is in the future
     if (!/^[A-Z]{3}$/.test(destinationInput)) {
       alert("Please enter a valid three-letter airport code (e.g., DXB, LON, PAR).");
       return;
     }
 
+    const today = new Date();
+    today.setHours(0, 0, 0, 0); // Set to midnight to compare dates only
     const checkinDate = new Date(checkin);
     const checkoutDate = new Date(checkout);
-    if (isNaN(checkinDate.getTime()) || isNaN(checkoutDate.getTime()) || checkoutDate <= checkinDate) {
-      alert("Please enter valid dates, with check-out after check-in.");
+
+    if (isNaN(checkinDate.getTime()) || isNaN(checkoutDate.getTime()) || checkoutDate <= checkinDate || checkinDate < today) {
+      alert("Please enter valid dates, with check-out after check-in and check-in in the future (after today).");
       return;
     }
 
