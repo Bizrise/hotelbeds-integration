@@ -1,48 +1,157 @@
-/* General page styling */
 body {
-  font-family: Arial, sans-serif;
+  font-family: 'Helvetica Neue', Helvetica, Arial, sans-serif; /* Booking.com’s clean, modern font */
   margin: 0;
   padding: 20px;
-  background-color: #f8f8f8;
+  background-color: #f7f7f7; /* Light gray background, like Booking.com’s homepage */
+  line-height: 1.6; /* Better readability, as on Booking.com */
+  color: #333; /* Dark gray text, matches Booking.com */
 }
 
-/* Header styling */
-header {
-  text-align: center;
-  margin-bottom: 30px;
+h1, p {
+  text-align: center; /* Keeps headings and paragraphs centered, as is */
+  font-weight: 400; /* Lighter weight, like Booking.com headings */
+  margin-bottom: 15px; /* More spacing, matching Booking.com */
 }
 
-/* Form styling */
-.form-group {
+h1 {
+  font-size: 24px; /* Larger heading, similar to Booking.com’s titles */
+  color: #222; /* Darker text for headings, as on Booking.com */
+}
+
+h2 {
+  font-size: 20px; /* Heading for results, like Booking.com */
+  color: #222;
   margin-bottom: 15px;
-}
-label {
-  display: block;
-  font-weight: bold;
-}
-input[type="text"],
-input[type="date"],
-input[type="number"] {
-  width: 100%;
-  padding: 8px;
-  margin-top: 5px;
-  box-sizing: border-box;
-}
-button {
-  padding: 10px 15px;
-  background-color: #007BFF;
-  color: white;
-  border: none;
-  cursor: pointer;
-}
-button:hover {
-  background-color: #0056b3;
+  font-weight: 500; /* Medium weight, matches Booking.com */
 }
 
-/* Results section styling */
-#results {
-  margin-top: 30px;
-  padding: 15px;
-  background-color: #fff;
-  border: 1px solid #ddd;
+form {
+  max-width: 600px; /* Slightly wider, matching Booking.com’s search forms */
+  margin: 20px auto; /* Centers the form, same as before but with Booking.com spacing */
+  padding: 25px; /* More padding, like Booking.com’s forms */
+  background: white; /* White background, as on Booking.com */
+  border-radius: 8px; /* More rounded corners, like Booking.com’s cards */
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Softer shadow, matches Booking.com’s design */
+}
+
+form label {
+  display: block; /* Keeps labels above inputs for Destination, Check-in, Check-out, Number of Travellers, as is */
+  margin-bottom: 8px; /* Less spacing, matching Booking.com’s tight layout */
+  font-size: 14px; /* Smaller label text, like Booking.com */
+  color: #666; /* Gray text, as on Booking.com labels */
+  font-weight: 500; /* Medium weight, matches Booking.com */
+}
+
+form input {
+  width: 100%; /* Full width of form, same as now for all 4 sections */
+  padding: 12px; /* Larger padding, like Booking.com inputs */
+  margin-bottom: 15px; /* More spacing between inputs, matching Booking.com */
+  border: 1px solid #ddd; /* Light gray border, matches Booking.com */
+  border-radius: 4px; /* Slight rounding, as on Booking.com */
+  font-size: 14px; /* Matches Booking.com input text size */
+  box-sizing: border-box; /* Ensures padding doesn’t expand width */
+}
+
+button {
+  background-color: #007bff; /* Booking.com’s signature blue for the Search button */
+  color: white; /* White text, as on Booking.com buttons */
+  padding: 12px 24px; /* Larger padding, matching Booking.com’s buttons */
+  border: none; /* No border, as on Booking.com */
+  border-radius: 4px; /* Slight rounding, same as Booking.com */
+  font-size: 16px; /* Larger text, like Booking.com buttons */
+  cursor: pointer; /* Hand cursor on hover, as is */
+  width: 100%; /* Full width, matching Booking.com’s search button */
+  margin-top: 10px; /* Space above button, same as before */
+}
+
+button:hover {
+  background-color: #0056b3; /* Darker blue on hover, matches Booking.com’s button behavior */
+}
+
+.filters {
+  max-width: 600px; /* Same width as form, matching Booking.com’s layout */
+  margin: 20px auto; /* Centers filters, same as form but with Booking.com spacing */
+  padding: 15px; /* More padding, like Booking.com’s filters */
+  background: white; /* White background, as on Booking.com */
+  border-radius: 8px; /* More rounded, like Booking.com’s cards */
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Softer shadow, matches Booking.com */
+  display: flex; /* Horizontal layout for filters, like Booking.com */
+  justify-content: space-between; /* Space between filter items, as on Booking.com */
+  align-items: center; /* Centers vertically, matching Booking.com */
+}
+
+.filters label {
+  margin-right: 10px; /* Space between label and dropdown, as on Booking.com */
+  font-size: 14px; /* Same as form labels, matching Booking.com */
+  color: #666; /* Gray text, as on Booking.com */
+  font-weight: 500; /* Medium weight, matches Booking.com */
+}
+
+.filters select {
+  padding: 10px; /* Larger padding, like Booking.com dropdowns */
+  margin-right: 10px; /* Space between dropdowns, as is but refined */
+  border: 1px solid #ddd; /* Light gray border, matches Booking.com */
+  border-radius: 4px; /* Slight rounding, same as inputs/buttons on Booking.com */
+  font-size: 14px; /* Matches Booking.com dropdown text size */
+  background-color: white; /* White background, as on Booking.com */
+  cursor: pointer; /* Hand cursor, as on Booking.com */
+}
+
+.results-grid {
+  display: grid; /* Keeps the grid layout for hotel cards, as is */
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); /* Slightly wider cards, matching Booking.com’s layout */
+  gap: 20px; /* Same spacing between cards, as is but refined for Booking.com */
+  margin: 20px 0; /* Same top/bottom margin, keeps layout but with Booking.com spacing */
+}
+
+.hotel-card {
+  background: white; /* White background, as on Booking.com hotel cards */
+  border-radius: 8px; /* More rounded corners, like Booking.com cards */
+  box-shadow: 0 4px 6px rgba(0,0,0,0.1); /* Softer shadow, matches Booking.com’s design */
+  padding: 20px; /* More padding, like Booking.com cards */
+  display: flex; /* Keeps cards in a column layout, as is */
+  flex-direction: column; /* Stacks content vertically, same as now */
+  transition: box-shadow 0.3s ease; /* Subtle hover effect, like Booking.com */
+}
+
+.hotel-card:hover {
+  box-shadow: 0 6px 12px rgba(0,0,0,0.15); /* Slightly darker shadow on hover, matches Booking.com */
+}
+
+.hotel-card img {
+  width: 100%; /* Full width of card, same as now but refined for Booking.com */
+  height: 240px; /* Taller images, matching Booking.com’s hotel card images */
+  object-fit: cover; /* Ensures pictures fit without stretching, as is */
+  border-radius: 8px 8px 0 0; /* More rounded top corners, like Booking.com */
+}
+
+.hotel-card h3 {
+  margin: 15px 0 10px; /* More spacing, matching Booking.com’s hotel name */
+  font-size: 20px; /* Larger text, like Booking.com hotel names */
+  color: #222; /* Darker text, as on Booking.com */
+  font-weight: 500; /* Medium weight, matches Booking.com */
+}
+
+.hotel-card p {
+  margin: 8px 0; /* Less spacing, matching Booking.com’s details */
+  font-size: 14px; /* Smaller text, like Booking.com details */
+  color: #666; /* Gray text, as on Booking.com */
+  line-height: 1.4; /* Better readability, matches Booking.com */
+}
+
+.hotel-card .book-btn {
+  background-color: #007bff; /* Booking.com’s blue for action buttons, same as Search */
+  color: white; /* White text, as on Booking.com buttons */
+  padding: 12px 24px; /* Larger padding, matching Booking.com’s buttons */
+  border: none; /* No border, as on Booking.com */
+  border-radius: 4px; /* Slight rounding, same as Booking.com */
+  font-size: 16px; /* Larger text, like Booking.com buttons */
+  cursor: pointer; /* Hand cursor on hover, as is */
+  margin-top: 15px; /* More spacing above button, matching Booking.com */
+  align-self: flex-start; /* Starts button at left, same as now */
+  width: auto; /* Adjusts to content width, like Booking.com */
+}
+
+.hotel-card .book-btn:hover {
+  background-color: #0056b3; /* Darker blue on hover, matches Booking.com’s button behavior */
 }
