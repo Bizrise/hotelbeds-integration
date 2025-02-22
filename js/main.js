@@ -2,78 +2,84 @@ document.addEventListener('DOMContentLoaded', () => {
   const form = document.getElementById('hotelSearchForm');
   const resultsSection = document.getElementById('results');
 
-  form.addEventListener('submit', function(event) {
+  form.addEventListener('submit', async function(event) {
     event.preventDefault();
 
-    // Get data from the 4 search sections
+    // Get data from the 4 search fields
     const destinationInput = document.getElementById('destination').value.trim().toUpperCase();
     const checkin = document.getElementById('checkin').value;
     const checkout = document.getElementById('checkout').value;
     const travellers = document.getElementById('travellers').value;
 
-    // Simple validation for the 4 sections, ensuring Check-in is in the future
+    // Validate Destination (3-letter airport code)
     if (!/^[A-Z]{3}$/.test(destinationInput)) {
       alert("Please enter a valid three-letter airport code (e.g., DXB, LON, PAR).");
       return;
     }
 
+    // Validate Dates
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Midnight for date comparison
+    today.setHours(0, 0, 0, 0);
     const checkinDate = new Date(checkin);
     const checkoutDate = new Date(checkout);
 
     if (isNaN(checkinDate.getTime()) || isNaN(checkoutDate.getTime()) || checkoutDate <= checkinDate || checkinDate < today) {
-      alert("Please enter valid dates, with check-out after check-in and check-in in the future (after today).");
+      alert("Please enter valid dates, with check-out after check-in and check-in in the future.");
       return;
     }
 
-    const requestData = {
-      destination: destinationInput,
-      checkin,
-      checkout,
-      travellers
-    };
+    // Prepare data for API request
+    const requestData = { destination: destinationInput, checkin, checkout, travellers };
 
     // Show "Loading" message
-    resultsSection.innerHTML = "<p>Waiting for hotel results... <span class='loading'>Loading...</span></p>";
+    resultsSection.innerHTML = `<p>Waiting for hotel results... <span class='loading'>Loading...</span></p>`;
+    
+    console.log("Sending data to Make.com:", requestData);
 
-    // Send data to Make.com and handle the response simply
-    fetch("https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", { // Your webhook URL
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json"
-      },
-      body: JSON.stringify(requestData)
-    })
-    .then(response => {
+    try {
+      const response = await fetch("https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData)
+      });
+
       if (!response.ok) {
-        throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+        throw new Error(`HTTP error! Status: ${response.status} - ${response.statusText}`);
       }
+
       const contentType = response.headers.get('content-type');
       if (!contentType || !contentType.includes('application/json')) {
-        throw new Error(`Expected JSON, got: ${contentType || 'no content-type'}`);
+        throw new Error(`Expected JSON, received: ${contentType || 'no content-type'}`);
       }
-      return response.json(); // Parse the JSON response
-    })
-    .then(data => {
-      // Parse the raw data string from Make.com
-      const hotels = JSON.parse(data.data).data.hotels.hotels; // Extract hotels from {"data": "..."}
-      displayHotels(hotels); // Show hotels
-    })
-    .catch(error => {
-      console.error("Error:", error);
-      resultsSection.innerHTML = `<p>An error occurred while fetching hotel data. Please try again later. Details: ${error.message}</p>`;
-    });
+
+      const responseData = await response.json();
+      console.log("Raw response from Make.com:", responseData);
+
+      // Ensure response contains hotel data
+      if (!responseData.data) {
+        throw new Error("No hotel data received.");
+      }
+
+      const hotels = JSON.parse(responseData.data).data.hotels.hotels || [];
+      console.log("Parsed hotel data:", hotels);
+
+      displayHotels(hotels);
+
+    } catch (error) {
+      console.error("Error fetching hotel data:", error);
+      resultsSection.innerHTML = `<p class="error">An error occurred: ${error.message}. Please try again.</p>`;
+    }
   });
 
   function displayHotels(hotels) {
-    const container = document.getElementById('results'); // Use existing resultsSection
+    const container = document.getElementById('results');
     container.innerHTML = "<h2>Hotel Search Results</h2>";
+
     if (hotels.length > 0) {
       container.innerHTML += "<div class='results-grid'>";
       hotels.forEach(hotel => {
         hotel.rooms.forEach(room => {
-          const price = room.rates[0]?.net || "N/A";
+          const price = room.rates?.[0]?.net || "N/A";
           container.innerHTML += `
             <div class="hotel-card">
               <h3>${hotel.name} - ${room.name}</h3>
@@ -89,11 +95,11 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 
   function viewRooms(code) {
-    alert(`View rooms for ${code}`); // Simple alert, customize as needed
+    alert(`View rooms for ${code}`);
   }
 });
 
-// Add simple loading animation CSS in styles.css for better visuals
+// Add simple loading animation CSS
 const styles = `
   .loading {
     font-style: italic;
@@ -145,6 +151,11 @@ const styles = `
 
   .hotel-card button:hover {
     background: #0056b3;
+  }
+
+  .error {
+    color: red;
+    font-weight: bold;
   }
 `;
 
