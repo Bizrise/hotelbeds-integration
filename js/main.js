@@ -5,11 +5,13 @@ document.addEventListener('DOMContentLoaded', () => {
   form.addEventListener('submit', function(event) {
     event.preventDefault();
 
+    // Get data from the 4 search sections (Destination, Check-in, Check-out, Number of Travellers)
     const destinationInput = document.getElementById('destination').value.trim().toUpperCase();
     const checkin = document.getElementById('checkin').value;
     const checkout = document.getElementById('checkout').value;
     const travellers = document.getElementById('travellers').value;
 
+    // Validate the 4 sections to ensure they’re correct, like Booking.com
     if (!/^[A-Z]{3}$/.test(destinationInput)) {
       alert("Please enter a valid three-letter airport code (e.g., DXB, LON, PAR).");
       return;
@@ -35,7 +37,8 @@ document.addEventListener('DOMContentLoaded', () => {
 
     resultsSection.innerHTML = "<p>Loading results...</p>";
 
-    fetch("https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", {  // Replace with your webhook URL
+    // Send data to Make.com using the webhook URL
+    fetch("https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", { // Replace with your actual webhook URL
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -71,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
     })
     .then(data => {
       let htmlContent = `
-        <h2>Hotel Search Results:</h2>
+        <h2>Hotel Search Results</h2>
         <div class="filters">
           <label>Board:</label>
           <select id="boardFilter">
@@ -110,7 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
                 <h3>${hotel.name}</h3>
                 <p>Category: ${category}</p>
                 <p>Board: ${board}</p>
-                <p>Price: ${price} EUR</p>
+                <p>Price: ${price} EUR / night</p>
                 <p>Availability: ${availability}</p>
                 <button class="book-btn" data-hotel="${hotel.code}" data-rate="${cheapestRate.rateKey}">View Rooms</button>
               </div>`;
@@ -122,6 +125,7 @@ document.addEventListener('DOMContentLoaded', () => {
       }
       resultsSection.innerHTML = htmlContent;
 
+      // Add filtering like Booking.com
       document.getElementById('boardFilter').addEventListener('change', filterResults);
       document.getElementById('categoryFilter').addEventListener('change', filterResults);
 
@@ -138,11 +142,13 @@ document.addEventListener('DOMContentLoaded', () => {
         });
       }
 
+      // Add booking button click handler, mimicking Booking.com behavior
       document.querySelectorAll('.book-btn').forEach(btn => {
         btn.addEventListener('click', function() {
           const hotelCode = this.getAttribute('data-hotel');
           const rateKey = this.getAttribute('data-rate');
           alert(`Booking for Hotel ${hotelCode} with Rate ${rateKey}. Redirecting to booking page...`);
+          // In a real Booking.com setup, this would navigate to a booking page or API call
         });
       });
     })
