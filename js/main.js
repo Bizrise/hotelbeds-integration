@@ -5,20 +5,20 @@ document.addEventListener('DOMContentLoaded', () => {
   form.addEventListener('submit', function(event) {
     event.preventDefault();
 
-    // Get data from the 4 search sections (Destination, Check-in, Check-out, Number of Travellers)
+    // Get data from the 4 search sections
     const destinationInput = document.getElementById('destination').value.trim().toUpperCase();
     const checkin = document.getElementById('checkin').value;
     const checkout = document.getElementById('checkout').value;
     const travellers = document.getElementById('travellers').value;
 
-    // Validate the 4 sections, ensuring Check-in is in the future
+    // Simple validation for the 4 sections, ensuring Check-in is in the future
     if (!/^[A-Z]{3}$/.test(destinationInput)) {
       alert("Please enter a valid three-letter airport code (e.g., DXB, LON, PAR).");
       return;
     }
 
     const today = new Date();
-    today.setHours(0, 0, 0, 0); // Set to midnight to compare dates only
+    today.setHours(0, 0, 0, 0); // Midnight for date comparison
     const checkinDate = new Date(checkin);
     const checkoutDate = new Date(checkout);
 
@@ -27,22 +27,18 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    const timeDiff = Math.abs(checkoutDate - checkinDate);
-    const nights = Math.ceil(timeDiff / (1000 * 3600 * 24));
-
     const requestData = {
       destination: destinationInput,
       checkin,
       checkout,
-      travellers,
-      nights
+      travellers
     };
 
-    // Show "Waiting" or "Loading" message while Make.com processes
+    // Show "Loading" message
     resultsSection.innerHTML = "<p>Waiting for hotel results... <span class='loading'>Loading...</span></p>";
 
-    // Send data to Make.com and handle the response flexibly
-    fetch("https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", { // Replace with your actual webhook URL
+    // Send data to Make.com and handle the response simply
+    fetch("https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", { // Your webhook URL
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -50,175 +46,54 @@ document.addEventListener('DOMContentLoaded', () => {
       body: JSON.stringify(requestData)
     })
     .then(response => {
-      console.log('Response status:', response.status);
-      console.log('Response headers:', response.headers);
       if (!response.ok) {
-        if (response.status === 202) { // Handle 202 Accepted (asynchronous response)
-          return new Promise((resolve) => {
-            let attempts = 0;
-            const maxAttempts = 20; // Increase attempts to wait longer (adjust as needed)
-            const delay = 2000; // Check every 2 seconds for better reliability
-
-            const poll = () => {
-              if (attempts >= maxAttempts) {
-                throw new Error("Timeout waiting for Make.com response");
-              }
-
-              fetch("https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", { // Same webhook URL
-                method: "POST",
-                headers: {
-                  "Content-Type": "application/json"
-                },
-                body: JSON.stringify(requestData)
-              })
-              .then(pollResponse => {
-                if (pollResponse.ok && pollResponse.status === 200) {
-                  const contentType = pollResponse.headers.get('content-type');
-                  if (contentType && contentType.includes('application/json')) {
-                    return pollResponse.text().then(text => {
-                      try {
-                        let data = text.trim();
-                        if (data.startsWith('"') && data.endsWith('"')) {
-                          data = data.slice(1, -1).replace(/\\"/g, '"').replace(/\\\\/g, '\\');
-                        }
-                        const parsedData = JSON.parse(data);
-                        resolve({ hotels: parsedData.hotels || [], images: parsedData.images || [] });
-                      } catch (parseError) {
-                        console.log('Raw response text:', text);
-                        throw new Error(`Failed to parse JSON: ${parseError.message}. Response text: ${text}`);
-                      }
-                    });
-                  } else {
-                    throw new Error(`Expected JSON, got: ${pollResponse.statusText}`);
-                  }
-                } else if (pollResponse.status === 202) {
-                  attempts++;
-                  setTimeout(poll, delay);
-                } else {
-                  throw new Error(`HTTP error! status: ${pollResponse.status} - ${pollResponse.statusText}`);
-                }
-              })
-              .catch(error => {
-                throw new Error(`Polling error: ${error.message}`);
-              });
-            };
-
-            poll();
-          });
-        } else {
-          throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
-        }
+        throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
       }
       const contentType = response.headers.get('content-type');
-      if (contentType && contentType.includes('application/json')) {
-        return response.text().then(text => {
-          try {
-            let data = text.trim();
-            if (data.startsWith('"') && data.endsWith('"')) {
-              data = data.slice(1, -1).replace(/\\"/g, '"').replace(/\\\\/g, '\\');
-            }
-            const parsedData = JSON.parse(data);
-            return { hotels: parsedData.hotels || [], images: parsedData.images || [] };
-          } catch (parseError) {
-            console.log('Raw response text:', text);
-            throw new Error(`Failed to parse JSON: ${parseError.message}. Response text: ${text}`);
-          }
-        });
-      } else if (contentType) {
-        throw new Error(`Expected JSON, got: ${contentType}`);
-      } else {
-        throw new Error(`Expected JSON, got: no content-type`);
+      if (!contentType || !contentType.includes('application/json')) {
+        throw new Error(`Expected JSON, got: ${contentType || 'no content-type'}`);
       }
+      return response.json(); // Parse the JSON response
     })
     .then(data => {
-      let htmlContent = `
-        <h2>Hotel Search Results</h2>
-        <div class="filters">
-          <label>Board:</label>
-          <select id="boardFilter">
-            <option value="all">All</option>
-            <option value="RO">Room Only</option>
-            <option value="BB">Bed & Breakfast</option>
-            <option value="HB">Half Board</option>
-            <option value="FB">Full Board</option>
-          </select>
-          <label>Category:</label>
-          <select id="categoryFilter">
-            <option value="all">All</option>
-            <option value="1">1 Star</option>
-            <option value="2">2 Stars</option>
-            <option value="3">3 Stars</option>
-            <option value="4">4 Stars</option>
-            <option value="5">5 Stars</option>
-          </select>
-        </div>
-        <div class="results-grid">`;
-      if (data.error) {
-        htmlContent += `<p>${data.error}</p>`;
-      } else if (data.hotels.length > 0) {
-        data.hotels.forEach(hotel => {
-          const hotelImage = data.images.find(img => img.hotelCode === hotel.code)?.imageUrl || `https://via.placeholder.com/300x200?text=No+Image`;
-          const firstRoom = hotel.rooms && hotel.rooms[0] ? hotel.rooms[0] : null;
-          if (firstRoom && firstRoom.rates && firstRoom.rates.length > 0) {
-            const cheapestRate = firstRoom.rates.reduce((min, rate) => rate.net < min.net ? rate : min, firstRoom.rates[0]);
-            const price = cheapestRate.net || "N/A";
-            const availability = cheapestRate.allotment > 0 ? "Available" : "Not Available";
-            const board = cheapestRate.boardName || "Room Only";
-            const category = hotel.categoryName || "Unknown Category";
-            htmlContent += `
-              <div class="hotel-card">
-                <img src="${hotelImage}" alt="${hotel.name}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
-                <h3>${hotel.name}</h3>
-                <p>Category: ${category}</p>
-                <p>Board: ${board}</p>
-                <p>Price: ${price} EUR / night</p>
-                <p>Availability: ${availability}</p>
-                <button class="book-btn" data-hotel="${hotel.code}" data-rate="${cheapestRate.rateKey}">View Rooms</button>
-              </div>`;
-          }
-        });
-        htmlContent += `</div>`;
-      } else {
-        htmlContent += "<p>No hotels found for your criteria.</p>";
-      }
-      resultsSection.innerHTML = htmlContent;
-
-      // Add filtering like Booking.com
-      document.getElementById('boardFilter').addEventListener('change', filterResults);
-      document.getElementById('categoryFilter').addEventListener('change', filterResults);
-
-      function filterResults() {
-        const boardFilter = document.getElementById('boardFilter').value;
-        const categoryFilter = document.getElementById('categoryFilter').value;
-        const hotelCards = document.querySelectorAll('.hotel-card');
-        hotelCards.forEach(card => {
-          const board = card.querySelector('p:nth-child(3)').textContent.split(': ')[1];
-          const category = card.querySelector('p:nth-child(2)').textContent.split(': ')[1];
-          const show = (boardFilter === 'all' || board === boardFilter) && 
-                      (categoryFilter === 'all' || category.includes(categoryFilter + ' Stars'));
-          card.style.display = show ? 'block' : 'none';
-        });
-      }
-
-      // Add booking button click handler, mimicking Booking.com behavior
-      document.querySelectorAll('.book-btn').forEach(btn => {
-        btn.addEventListener('click', function() {
-          const hotelCode = this.getAttribute('data-hotel');
-          const rateKey = this.getAttribute('data-rate');
-          alert(`Booking for Hotel ${hotelCode} with Rate ${rateKey}. Redirecting to booking page...`);
-          // In a real Booking.com setup, this would navigate to a booking page or API call
-        });
-      });
+      // Parse the raw data string from Make.com
+      const hotels = JSON.parse(data.data).data.hotels.hotels; // Extract hotels from {"data": "..."}
+      displayHotels(hotels); // Show hotels
     })
     .catch(error => {
       console.error("Error:", error);
       resultsSection.innerHTML = `<p>An error occurred while fetching hotel data. Please try again later. Details: ${error.message}</p>`;
     });
   });
+
+  function displayHotels(hotels) {
+    const container = document.getElementById('results'); // Use existing resultsSection
+    container.innerHTML = "<h2>Hotel Search Results</h2>";
+    if (hotels.length > 0) {
+      container.innerHTML += "<div class='results-grid'>";
+      hotels.forEach(hotel => {
+        hotel.rooms.forEach(room => {
+          const price = room.rates[0]?.net || "N/A";
+          container.innerHTML += `
+            <div class="hotel-card">
+              <h3>${hotel.name} - ${room.name}</h3>
+              <p>Price: ${price} EUR</p>
+              <button onclick="viewRooms('${hotel.code}-${room.code}')">View Rooms</button>
+            </div>`;
+        });
+      });
+      container.innerHTML += "</div>";
+    } else {
+      container.innerHTML += "<p>No hotels found for your criteria.</p>";
+    }
+  }
+
+  function viewRooms(code) {
+    alert(`View rooms for ${code}`); // Simple alert, customize as needed
+  }
 });
 
-// Optional: Add loading animation CSS in styles.css for better visuals
-// Ensure this is in your styles.css:
+// Add simple loading animation CSS in styles.css for better visuals
 const styles = `
   .loading {
     font-style: italic;
@@ -230,6 +105,46 @@ const styles = `
     0% { opacity: 1; }
     50% { opacity: 0.5; }
     100% { opacity: 1; }
+  }
+
+  .results-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+    gap: 20px;
+    padding: 20px;
+  }
+
+  .hotel-card {
+    border: 1px solid #ddd;
+    padding: 10px;
+    margin: 10px 0;
+    border-radius: 5px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  }
+
+  .hotel-card h3 {
+    margin: 0 0 5px;
+    font-size: 16px;
+    color: #333;
+  }
+
+  .hotel-card p {
+    margin: 0 0 10px;
+    font-size: 14px;
+    color: #666;
+  }
+
+  .hotel-card button {
+    background: #007bff;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+  }
+
+  .hotel-card button:hover {
+    background: #0056b3;
   }
 `;
 
