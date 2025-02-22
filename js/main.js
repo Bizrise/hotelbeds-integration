@@ -1,25 +1,20 @@
-// Wait for the document to load
 document.addEventListener('DOMContentLoaded', () => {
-  // Reference the form and results section
   const form = document.getElementById('hotelSearchForm');
   const resultsSection = document.getElementById('results');
 
   form.addEventListener('submit', function(event) {
-    event.preventDefault(); // Prevent page reload
+    event.preventDefault();
 
-    // --- Gather User Inputs ---
     const destinationInput = document.getElementById('destination').value.trim().toUpperCase();
     const checkin = document.getElementById('checkin').value;
     const checkout = document.getElementById('checkout').value;
     const travellers = document.getElementById('travellers').value;
 
-    // --- Validate Destination Input ---
     if (!/^[A-Z]{3}$/.test(destinationInput)) {
       alert("Please enter a valid three-letter airport code (e.g., DXB, LON, PAR).");
       return;
     }
 
-    // --- Validate Dates ---
     const checkinDate = new Date(checkin);
     const checkoutDate = new Date(checkout);
     if (isNaN(checkinDate.getTime()) || isNaN(checkoutDate.getTime()) || checkoutDate <= checkinDate) {
@@ -27,11 +22,9 @@ document.addEventListener('DOMContentLoaded', () => {
       return;
     }
 
-    // --- Calculate the Number of Nights ---
     const timeDiff = Math.abs(checkoutDate - checkinDate);
     const nights = Math.ceil(timeDiff / (1000 * 3600 * 24));
 
-    // --- Prepare Data Payload for Make.com ---
     const requestData = {
       destination: destinationInput,
       checkin,
@@ -40,11 +33,9 @@ document.addEventListener('DOMContentLoaded', () => {
       nights
     };
 
-    // Show a loading message in the results section
     resultsSection.innerHTML = "<p>Loading results...</p>";
 
-    // --- Send Data to Make.com Webhook ---
-    fetch("https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", {
+    fetch("https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", {  // Replace with your webhook URL
       method: "POST",
       headers: {
         "Content-Type": "application/json"
@@ -61,17 +52,14 @@ document.addEventListener('DOMContentLoaded', () => {
       if (contentType && contentType.includes('application/json')) {
         return response.text().then(text => {
           try {
-            // Attempt to parse the response text as JSON, handling extra quotes, whitespace, or malformed data
-            let data = text.trim(); // Remove leading/trailing whitespace
-            // Remove surrounding quotes if present and unescape any escaped quotes or backslashes
+            let data = text.trim();
             if (data.startsWith('"') && data.endsWith('"')) {
-              data = data.slice(1, -1); // Remove outer quotes
-              data = data.replace(/\\"/g, '"').replace(/\\\\/g, '\\'); // Unescape quotes and backslashes
+              data = data.slice(1, -1).replace(/\\"/g, '"').replace(/\\\\/g, '\\');
             }
             const parsedData = JSON.parse(data);
-            return Array.isArray(parsedData) ? parsedData : []; // Ensure data is an array
+            return { hotels: parsedData.hotels || [], images: parsedData.images || [] };
           } catch (parseError) {
-            console.log('Raw response text:', text); // Log for debugging
+            console.log('Raw response text:', text);
             throw new Error(`Failed to parse JSON: ${parseError.message}. Response text: ${text}`);
           }
         });
@@ -82,39 +70,81 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     })
     .then(data => {
-      // --- Process the Response from Make.com ---
-      let htmlContent = "<h2>Hotel Search Results:</h2>";
+      let htmlContent = `
+        <h2>Hotel Search Results:</h2>
+        <div class="filters">
+          <label>Board:</label>
+          <select id="boardFilter">
+            <option value="all">All</option>
+            <option value="RO">Room Only</option>
+            <option value="BB">Bed & Breakfast</option>
+            <option value="HB">Half Board</option>
+            <option value="FB">Full Board</option>
+          </select>
+          <label>Category:</label>
+          <select id="categoryFilter">
+            <option value="all">All</option>
+            <option value="1">1 Star</option>
+            <option value="2">2 Stars</option>
+            <option value="3">3 Stars</option>
+            <option value="4">4 Stars</option>
+            <option value="5">5 Stars</option>
+          </select>
+        </div>
+        <div class="results-grid">`;
       if (data.error) {
         htmlContent += `<p>${data.error}</p>`;
-      } else if (Array.isArray(data) && data.length > 0) {
-        data.forEach(hotel => {
-          // Extract the first room and find the cheapest rate for exact results
+      } else if (data.hotels.length > 0) {
+        data.hotels.forEach(hotel => {
+          const hotelImage = data.images.find(img => img.hotelCode === hotel.code)?.imageUrl || `https://via.placeholder.com/300x200?text=No+Image`;
           const firstRoom = hotel.rooms && hotel.rooms[0] ? hotel.rooms[0] : null;
           if (firstRoom && firstRoom.rates && firstRoom.rates.length > 0) {
             const cheapestRate = firstRoom.rates.reduce((min, rate) => rate.net < min.net ? rate : min, firstRoom.rates[0]);
             const price = cheapestRate.net || "N/A";
             const availability = cheapestRate.allotment > 0 ? "Available" : "Not Available";
+            const board = cheapestRate.boardName || "Room Only";
+            const category = hotel.categoryName || "Unknown Category";
             htmlContent += `
-              <div class="hotel">
-                <h3>${hotel.name || "Unknown Hotel"}</h3>
+              <div class="hotel-card">
+                <img src="${hotelImage}" alt="${hotel.name}" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
+                <h3>${hotel.name}</h3>
+                <p>Category: ${category}</p>
+                <p>Board: ${board}</p>
                 <p>Price: ${price} EUR</p>
                 <p>Availability: ${availability}</p>
-              </div>
-            `;
-          } else {
-            htmlContent += `
-              <div class="hotel">
-                <h3>${hotel.name || "Unknown Hotel"}</h3>
-                <p>Price: N/A</p>
-                <p>Availability: Not Available</p>
-              </div>
-            `;
+                <button class="book-btn" data-hotel="${hotel.code}" data-rate="${cheapestRate.rateKey}">View Rooms</button>
+              </div>`;
           }
         });
+        htmlContent += `</div>`;
       } else {
         htmlContent += "<p>No hotels found for your criteria.</p>";
       }
       resultsSection.innerHTML = htmlContent;
+
+      document.getElementById('boardFilter').addEventListener('change', filterResults);
+      document.getElementById('categoryFilter').addEventListener('change', filterResults);
+
+      function filterResults() {
+        const boardFilter = document.getElementById('boardFilter').value;
+        const categoryFilter = document.getElementById('categoryFilter').value;
+        const hotelCards = document.querySelectorAll('.hotel-card');
+        hotelCards.forEach(card => {
+          const board = card.querySelector('p:nth-child(3)').textContent.split(': ')[1];
+          const category = card.querySelector('p:nth-child(2)').textContent.split(': ')[1];
+          const show = (boardFilter === 'all' || board === boardFilter) && 
+                      (categoryFilter === 'all' || category.includes(categoryFilter + ' Stars'));
+          card.style.display = show ? 'block' : 'none';
+        });
+      }
+
+      document.querySelectorAll('.book-btn').forEach(btn => {
+        btn.addEventListener('click', function() {
+          const hotelCode = this.getAttribute('data-hotel');
+          const rateKey = this.getAttribute('data-rate');
+          alert(`Booking for Hotel ${hotelCode} with Rate ${rateKey}. Redirecting to booking page...`);
+        });
+      });
     })
     .catch(error => {
       console.error("Error:", error);
