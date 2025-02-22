@@ -155,3 +155,15 @@ button:hover {
 .hotel-card .book-btn:hover {
   background-color: #0056b3; /* Darker blue on hover, matches Booking.com’s button behavior */
 }
+
+.loading {
+  font-style: italic;
+  color: #666;
+  animation: pulse 1.5s infinite;
+}
+
+@keyframes pulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.5; }
+  100% { opacity: 1; }
+}
