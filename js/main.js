@@ -1,86 +1,104 @@
-document.addEventListener('DOMContentLoaded', () => {
-  const form = document.getElementById('hotelSearchForm');
-  const resultsSection = document.getElementById('results');
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("hotelSearchForm");
+  const resultsSection = document.getElementById("results");
 
-  form.addEventListener('submit', async function(event) {
+  form.addEventListener("submit", async function (event) {
     event.preventDefault();
 
-    // Get data from the 4 search fields
-    const destinationInput = document.getElementById('destination').value.trim().toUpperCase();
-    const checkin = document.getElementById('checkin').value;
-    const checkout = document.getElementById('checkout').value;
-    const travellers = document.getElementById('travellers').value;
+    // Get data from the search fields
+    const destinationInput = document
+      .getElementById("destination")
+      .value.trim()
+      .toUpperCase();
+    const checkin = document.getElementById("checkin").value;
+    const checkout = document.getElementById("checkout").value;
+    const travellers = document.getElementById("travellers").value;
 
-    // Validate Destination (3-letter airport code)
+    // Validation for destination format
     if (!/^[A-Z]{3}$/.test(destinationInput)) {
       alert("Please enter a valid three-letter airport code (e.g., DXB, LON, PAR).");
       return;
     }
 
-    // Validate Dates
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const checkinDate = new Date(checkin);
     const checkoutDate = new Date(checkout);
 
-    if (isNaN(checkinDate.getTime()) || isNaN(checkoutDate.getTime()) || checkoutDate <= checkinDate || checkinDate < today) {
-      alert("Please enter valid dates, with check-out after check-in and check-in in the future.");
+    if (
+      isNaN(checkinDate.getTime()) ||
+      isNaN(checkoutDate.getTime()) ||
+      checkoutDate <= checkinDate ||
+      checkinDate < today
+    ) {
+      alert(
+        "Please enter valid dates, with check-out after check-in and check-in in the future."
+      );
       return;
     }
 
-    // Prepare data for API request
-    const requestData = { destination: destinationInput, checkin, checkout, travellers };
+    const requestData = {
+      destination: destinationInput,
+      checkin,
+      checkout,
+      travellers,
+    };
 
-    // Show "Loading" message
-    resultsSection.innerHTML = `<p>Waiting for hotel results... <span class='loading'>Loading...</span></p>`;
-    
-    console.log("Sending data to Make.com:", requestData);
+    // Display loading message
+    resultsSection.innerHTML =
+      "<p>Waiting for hotel results... <span class='loading'>Loading...</span></p>";
 
     try {
-      const response = await fetch("https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestData)
-      });
+      const response = await fetch(
+        "https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", // Your webhook URL
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(requestData),
+        }
+      );
 
       if (!response.ok) {
-        throw new Error(`HTTP error! Status: ${response.status} - ${response.statusText}`);
+        throw new Error(
+          `HTTP error! Status: ${response.status} - ${response.statusText}`
+        );
       }
 
-      const contentType = response.headers.get('content-type');
-      if (!contentType || !contentType.includes('application/json')) {
-        throw new Error(`Expected JSON, received: ${contentType || 'no content-type'}`);
+      // Check the response type
+      const contentType = response.headers.get("content-type");
+      if (!contentType || !contentType.includes("application/json")) {
+        throw new Error(
+          `Expected JSON, but received: ${contentType || "no content-type"}`
+        );
       }
 
-      const responseData = await response.json();
-      console.log("Raw response from Make.com:", responseData);
+      // Parse response as JSON
+      const data = await response.json();
+      console.log("Response received:", data);
 
-      // Ensure response contains hotel data
-      if (!responseData.data) {
-        throw new Error("No hotel data received.");
+      // Ensure we properly access hotel data
+      if (!data || !data.data || !data.data.hotels) {
+        throw new Error("Invalid hotel data structure in response.");
       }
 
-      const hotels = JSON.parse(responseData.data).data.hotels.hotels || [];
-      console.log("Parsed hotel data:", hotels);
-
+      const hotels = data.data.hotels.hotels || [];
       displayHotels(hotels);
-
     } catch (error) {
-      console.error("Error fetching hotel data:", error);
+      console.error("Error:", error);
       resultsSection.innerHTML = `<p class="error">An error occurred: ${error.message}. Please try again.</p>`;
     }
   });
 
   function displayHotels(hotels) {
-    const container = document.getElementById('results');
-    container.innerHTML = "<h2>Hotel Search Results</h2>";
-
+    resultsSection.innerHTML = "<h2>Hotel Search Results</h2>";
     if (hotels.length > 0) {
-      container.innerHTML += "<div class='results-grid'>";
-      hotels.forEach(hotel => {
-        hotel.rooms.forEach(room => {
-          const price = room.rates?.[0]?.net || "N/A";
-          container.innerHTML += `
+      resultsSection.innerHTML += "<div class='results-grid'>";
+      hotels.forEach((hotel) => {
+        hotel.rooms.forEach((room) => {
+          const price = room.rates[0]?.net || "N/A";
+          resultsSection.innerHTML += `
             <div class="hotel-card">
               <h3>${hotel.name} - ${room.name}</h3>
               <p>Price: ${price} EUR</p>
@@ -88,9 +106,9 @@ document.addEventListener('DOMContentLoaded', () => {
             </div>`;
         });
       });
-      container.innerHTML += "</div>";
+      resultsSection.innerHTML += "</div>";
     } else {
-      container.innerHTML += "<p>No hotels found for your criteria.</p>";
+      resultsSection.innerHTML += "<p>No hotels found for your criteria.</p>";
     }
   }
 
@@ -99,7 +117,7 @@ document.addEventListener('DOMContentLoaded', () => {
   }
 });
 
-// Add simple loading animation CSS
+// Styling for the loading animation
 const styles = `
   .loading {
     font-style: italic;
@@ -152,13 +170,8 @@ const styles = `
   .hotel-card button:hover {
     background: #0056b3;
   }
-
-  .error {
-    color: red;
-    font-weight: bold;
-  }
 `;
 
-const styleSheet = document.createElement('style');
+const styleSheet = document.createElement("style");
 styleSheet.textContent = styles;
 document.head.appendChild(styleSheet);
