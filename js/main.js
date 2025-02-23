@@ -34,12 +34,12 @@ document.addEventListener("DOMContentLoaded", () => {
     // Data object to send
     const requestData = { destination: destinationInput, checkin, checkout, travellers };
 
-    // Send request and start polling for data
+    // Start polling for data
     sendRequestAndPoll(requestData);
   });
 
   function sendRequestAndPoll(requestData) {
-    const maxRetries = 6; // 30 seconds total (6 attempts, 5s apart)
+    const maxRetries = 6; // Retry up to 6 times (30 seconds total)
     let attempt = 0;
 
     function fetchData() {
@@ -49,8 +49,8 @@ document.addEventListener("DOMContentLoaded", () => {
         body: JSON.stringify(requestData),
       })
         .then(response => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! Status: ${response.status}`);
+          if (response.status === 202) {
+            throw new Error("Accepted"); // Simulate "Accepted" error for retry
           }
           return response.json();
         })
@@ -74,8 +74,13 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         })
         .catch(error => {
-          console.error("Fetch error:", error);
-          resultsSection.innerHTML = `<p>Error fetching hotels: ${error.message}</p>`;
+          if (error.message === "Accepted" && attempt < maxRetries) {
+            attempt++;
+            setTimeout(fetchData, 5000); // Wait 5 seconds and retry
+          } else {
+            console.error("Fetch error:", error);
+            resultsSection.innerHTML = `<p>Error fetching hotels: ${error.message}</p>`;
+          }
         });
     }
 
