@@ -54,13 +54,15 @@ document.addEventListener("DOMContentLoaded", () => {
         return response.json();
       })
       .then(data => {
-        try {
-          const hotels = JSON.parse(data.data).data.hotels.hotels;
-          displayHotels(hotels);
-        } catch (error) {
-          console.error("Data parsing error:", error);
-          resultsSection.innerHTML = `<p>Unable to process hotel data. Please try again later.</p>`;
-        }
+        setTimeout(() => { // Wait for 8 seconds before processing
+          try {
+            const hotels = JSON.parse(data.data).data.hotels.hotels;
+            displayHotels(hotels);
+          } catch (error) {
+            console.error("Data parsing error:", error);
+            resultsSection.innerHTML = `<p>Unable to process hotel data. Please try again later.</p>`;
+          }
+        }, 8000); // 8 seconds delay
       })
       .catch(error => {
         console.error("Fetch error:", error);
