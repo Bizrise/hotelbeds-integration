@@ -39,6 +39,11 @@ document.addEventListener("DOMContentLoaded", () => {
     // Show loading message
     resultsSection.innerHTML = "<p>Waiting for hotel results... <span class='loading'>Loading...</span></p>";
 
+    // Set timeout for 30 seconds
+    const timeout = setTimeout(() => {
+      resultsSection.innerHTML = `<p>Request timed out. Please try again later.</p>`;
+    }, 30000);
+
     // Send request to Make.com
     fetch("https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", {
       method: "POST",
@@ -49,22 +54,28 @@ document.addEventListener("DOMContentLoaded", () => {
     })
       .then(response => {
         if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
+          throw new Error(`HTTP error! Status: ${response.status} - ${response.statusText}`);
         }
         return response.json();
       })
       .then(data => {
-        setTimeout(() => { // Wait for 30 seconds before processing
-          try {
-            const hotels = JSON.parse(data.data).data.hotels.hotels;
-            displayHotels(hotels);
-          } catch (error) {
-            console.error("Data parsing error:", error);
-            resultsSection.innerHTML = `<p>Unable to process hotel data. Please try again later.</p>`;
-          }
-        }, 30000); // 30 seconds delay
+        clearTimeout(timeout); // Clear timeout if response is received in time
+
+        let parsedData;
+        try {
+          // Check if response is stringified JSON
+          parsedData = typeof data.data === "string" ? JSON.parse(data.data) : data.data;
+          
+          // Extract hotels array
+          const hotels = parsedData?.data?.hotels?.hotels || [];
+          displayHotels(hotels);
+        } catch (error) {
+          console.error("Data parsing error:", error, data);
+          resultsSection.innerHTML = `<p>Unable to process hotel data. Please try again later.</p>`;
+        }
       })
       .catch(error => {
+        clearTimeout(timeout);
         console.error("Fetch error:", error);
         resultsSection.innerHTML = `<p>Error fetching hotels: ${error.message}</p>`;
       });
