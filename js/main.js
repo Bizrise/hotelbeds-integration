@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Validate destination code (3-letter code like "LON", "DXB")
     if (!/^[A-Z]{3}$/.test(destinationInput)) {
-      alert("Please enter a valid three-letter airport code (e.g., DXB, LON, PAR).");
+      alert("Please enter a valid three-letter airport code (e.g., DXB, LON, PAR). ");
       return;
     }
 
@@ -28,54 +28,42 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Data object to send
-    const requestData = {
-      destination: destinationInput,
-      checkin,
-      checkout,
-      travellers
-    };
-
     // Show loading message
     resultsSection.innerHTML = "<p>Waiting for hotel results... <span class='loading'>Loading...</span></p>";
 
-    // Set timeout for 30 seconds
-    const timeout = setTimeout(() => {
-      resultsSection.innerHTML = `<p>Request timed out. Please try again later.</p>`;
-    }, 30000);
+    // Create a controller to handle timeout (30s)
+    const controller = new AbortController();
+    const timeoutId = setTimeout(() => controller.abort(), 30000);
+
+    // Data object to send
+    const requestData = { destination: destinationInput, checkin, checkout, travellers };
 
     // Send request to Make.com
     fetch("https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", {
       method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-      },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify(requestData),
+      signal: controller.signal
     })
       .then(response => {
+        clearTimeout(timeoutId); // Clear timeout if request succeeds
         if (!response.ok) {
-          throw new Error(`HTTP error! Status: ${response.status} - ${response.statusText}`);
+          throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
         }
         return response.json();
       })
       .then(data => {
-        clearTimeout(timeout); // Clear timeout if response is received in time
-
-        let parsedData;
         try {
-          // Check if response is stringified JSON
-          parsedData = typeof data.data === "string" ? JSON.parse(data.data) : data.data;
-          
-          // Extract hotels array
-          const hotels = parsedData?.data?.hotels?.hotels || [];
+          // Handle both structured JSON and stringified JSON
+          const parsedData = typeof data.data === "string" ? JSON.parse(data.data) : data.data;
+          const hotels = parsedData?.data?.hotels?.hotels;
           displayHotels(hotels);
         } catch (error) {
-          console.error("Data parsing error:", error, data);
+          console.error("Data parsing error:", error);
           resultsSection.innerHTML = `<p>Unable to process hotel data. Please try again later.</p>`;
         }
       })
       .catch(error => {
-        clearTimeout(timeout);
         console.error("Fetch error:", error);
         resultsSection.innerHTML = `<p>Error fetching hotels: ${error.message}</p>`;
       });
@@ -112,39 +100,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
 // Add CSS dynamically
 const styles = `
-  .loading {
-    font-style: italic;
-    color: #666;
-    animation: pulse 1.5s infinite;
-  }
-  @keyframes pulse {
-    0% { opacity: 1; }
-    50% { opacity: 0.5; }
-    100% { opacity: 1; }
-  }
-  .results-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-    gap: 20px;
-    padding: 20px;
-  }
-  .hotel-card {
-    border: 1px solid #ddd;
-    padding: 10px;
-    margin: 10px 0;
-    border-radius: 5px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  }
-  .hotel-card h3 {
-    margin: 0 0 5px;
-    font-size: 16px;
-    color: #333;
-  }
-  .hotel-card p {
-    margin: 0 0 10px;
-    font-size: 14px;
-    color: #666;
-  }
+  .loading { font-style: italic; color: #666; animation: pulse 1.5s infinite; }
+  @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+  .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
+  .hotel-card { border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 5px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+  .hotel-card h3 { margin: 0 0 5px; font-size: 16px; color: #333; }
+  .hotel-card p { margin: 0 0 10px; font-size: 14px; color: #666; }
 `;
 const styleSheet = document.createElement("style");
 styleSheet.textContent = styles;
