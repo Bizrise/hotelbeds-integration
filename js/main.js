@@ -13,7 +13,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // Validate destination code (3-letter code like "LON", "DXB")
     if (!/^[A-Z]{3}$/.test(destinationInput)) {
-      alert("Please enter a valid three-letter airport code (e.g., DXB, LON, PAR). ");
+      alert("Please enter a valid three-letter airport code (e.g., DXB, LON, PAR).");
       return;
     }
 
@@ -31,43 +31,56 @@ document.addEventListener("DOMContentLoaded", () => {
     // Show loading message
     resultsSection.innerHTML = "<p>Waiting for hotel results... <span class='loading'>Loading...</span></p>";
 
-    // Create a controller to handle timeout (30s)
-    const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), 30000);
-
     // Data object to send
     const requestData = { destination: destinationInput, checkin, checkout, travellers };
 
-    // Send request to Make.com
-    fetch("https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(requestData),
-      signal: controller.signal
-    })
-      .then(response => {
-        clearTimeout(timeoutId); // Clear timeout if request succeeds
-        if (!response.ok) {
-          throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
-        }
-        return response.json();
-      })
-      .then(data => {
-        try {
-          // Handle both structured JSON and stringified JSON
-          const parsedData = typeof data.data === "string" ? JSON.parse(data.data) : data.data;
-          const hotels = parsedData?.data?.hotels?.hotels;
-          displayHotels(hotels);
-        } catch (error) {
-          console.error("Data parsing error:", error);
-          resultsSection.innerHTML = `<p>Unable to process hotel data. Please try again later.</p>`;
-        }
-      })
-      .catch(error => {
-        console.error("Fetch error:", error);
-        resultsSection.innerHTML = `<p>Error fetching hotels: ${error.message}</p>`;
-      });
+    // Send request and start polling for data
+    sendRequestAndPoll(requestData);
   });
+
+  function sendRequestAndPoll(requestData) {
+    const maxRetries = 6; // 30 seconds total (6 attempts, 5s apart)
+    let attempt = 0;
+
+    function fetchData() {
+      fetch("https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData),
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! Status: ${response.status}`);
+          }
+          return response.json();
+        })
+        .then(data => {
+          let parsedData;
+          try {
+            parsedData = typeof data.data === "string" ? JSON.parse(data.data) : data.data;
+            const hotels = parsedData?.data?.hotels?.hotels || [];
+
+            if (hotels.length > 0) {
+              displayHotels(hotels);
+            } else if (attempt < maxRetries) {
+              attempt++;
+              setTimeout(fetchData, 5000); // Retry every 5 seconds
+            } else {
+              resultsSection.innerHTML = `<p>No hotels found for your criteria after multiple attempts.</p>`;
+            }
+          } catch (error) {
+            console.error("Data parsing error:", error);
+            resultsSection.innerHTML = `<p>Unable to process hotel data. Please try again later.</p>`;
+          }
+        })
+        .catch(error => {
+          console.error("Fetch error:", error);
+          resultsSection.innerHTML = `<p>Error fetching hotels: ${error.message}</p>`;
+        });
+    }
+
+    fetchData(); // Start polling
+  }
 
   function displayHotels(hotels) {
     resultsSection.innerHTML = "<h2>Hotel Search Results</h2>";
