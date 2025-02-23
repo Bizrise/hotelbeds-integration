@@ -48,16 +48,21 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestData),
       })
-        .then(response => {
-          if (response.status === 202) {
-            throw new Error("Accepted"); // Simulate "Accepted" error for retry
+        .then(response => response.text()) // Read as plain text first
+        .then(text => {
+          if (text.trim() === "Accepted") {
+            if (attempt < maxRetries) {
+              attempt++;
+              setTimeout(fetchData, 5000); // Wait 5 seconds and retry
+            } else {
+              resultsSection.innerHTML = `<p>No hotels found after multiple attempts.</p>`;
+            }
+            return;
           }
-          return response.json();
-        })
-        .then(data => {
-          let parsedData;
+
           try {
-            parsedData = typeof data.data === "string" ? JSON.parse(data.data) : data.data;
+            const data = JSON.parse(text); // Now parse JSON safely
+            let parsedData = typeof data.data === "string" ? JSON.parse(data.data) : data.data;
             const hotels = parsedData?.data?.hotels?.hotels || [];
 
             if (hotels.length > 0) {
@@ -66,7 +71,7 @@ document.addEventListener("DOMContentLoaded", () => {
               attempt++;
               setTimeout(fetchData, 5000); // Retry every 5 seconds
             } else {
-              resultsSection.innerHTML = `<p>No hotels found for your criteria after multiple attempts.</p>`;
+              resultsSection.innerHTML = `<p>No hotels found for your criteria.</p>`;
             }
           } catch (error) {
             console.error("Data parsing error:", error);
@@ -74,13 +79,8 @@ document.addEventListener("DOMContentLoaded", () => {
           }
         })
         .catch(error => {
-          if (error.message === "Accepted" && attempt < maxRetries) {
-            attempt++;
-            setTimeout(fetchData, 5000); // Wait 5 seconds and retry
-          } else {
-            console.error("Fetch error:", error);
-            resultsSection.innerHTML = `<p>Error fetching hotels: ${error.message}</p>`;
-          }
+          console.error("Fetch error:", error);
+          resultsSection.innerHTML = `<p>Error fetching hotels: ${error.message}</p>`;
         });
     }
 
