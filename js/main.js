@@ -54,7 +54,7 @@ document.addEventListener("DOMContentLoaded", () => {
         return response.json();
       })
       .then(data => {
-        setTimeout(() => { // Wait for 8 seconds before processing
+        setTimeout(() => { // Wait for 30 seconds before processing
           try {
             const hotels = JSON.parse(data.data).data.hotels.hotels;
             displayHotels(hotels);
@@ -62,7 +62,7 @@ document.addEventListener("DOMContentLoaded", () => {
             console.error("Data parsing error:", error);
             resultsSection.innerHTML = `<p>Unable to process hotel data. Please try again later.</p>`;
           }
-        }, 8000); // 8 seconds delay
+        }, 30000); // 30 seconds delay
       })
       .catch(error => {
         console.error("Fetch error:", error);
