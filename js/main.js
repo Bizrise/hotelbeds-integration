@@ -1,7 +1,6 @@
 document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("hotelSearchForm");
-  const resultsSection = document.getElementById("results-grid");
-  const filters = document.querySelectorAll('.filters-sidebar input, .filters-sidebar select');
+  const resultsSection = document.getElementById("results");
 
   form.addEventListener("submit", function (event) {
     event.preventDefault();
@@ -12,9 +11,9 @@ document.addEventListener("DOMContentLoaded", () => {
     const checkout = document.getElementById("checkout").value;
     const travellers = document.getElementById("travellers").value;
 
-    // Validate destination code (3-letter code like "LON", "DXB")
-    if (!/^[A-Z]{3}$/.test(destinationInput)) {
-      alert("Please enter a valid three-letter airport code (e.g., DXB, LON, PAR).");
+    // Validate destination code (3-letter code like "LON", "DXB", "TOKYO")
+    if (!/^[A-Z]{3,}$/.test(destinationInput)) {
+      alert("Please enter a valid destination code or city (e.g., DXB, LON, TOKYO).");
       return;
     }
 
@@ -39,41 +38,6 @@ document.addEventListener("DOMContentLoaded", () => {
     // Start polling for data (will try up to 12 times = 60 seconds total)
     sendRequestAndPoll(requestData, startTime, minLoadingTime);
   });
-
-  // Filter functionality (simplified, can be expanded)
-  filters.forEach(filter => {
-    filter.addEventListener('change', () => {
-      applyFilters();
-    });
-  });
-
-  function applyFilters() {
-    const checkedFilters = Array.from(document.querySelectorAll('.filters-sidebar input:checked')).map(input => input.name);
-    const selectedLandmark = document.querySelector('select[name="landmark"]').value;
-    const selectedZone = document.querySelector('select[name="zone"]').value;
-
-    const hotelCards = document.querySelectorAll('.hotel-card');
-    hotelCards.forEach(card => {
-      const hotelData = JSON.parse(decodeURIComponent(card.dataset.hotel));
-      let showCard = true;
-
-      if (checkedFilters.length > 0) {
-        if (checkedFilters.includes('breakfast') && !hotelData.breakfast) showCard = false;
-        if (checkedFilters.includes('halfBoard') && !hotelData.halfBoard) showCard = false;
-        if (checkedFilters.includes('selfCatering') && !hotelData.selfCatering) showCard = false;
-        if (checkedFilters.includes('stars5') && hotelData.category?.name !== "5 STARS") showCard = false;
-        if (checkedFilters.includes('stars4') && hotelData.category?.name !== "4 STARS") showCard = false;
-        if (checkedFilters.includes('stars3') && hotelData.category?.name !== "3 STARS") showCard = false;
-        if (checkedFilters.includes('topHotels') && !hotelData.topHotels) showCard = false;
-        if (checkedFilters.includes('platinumPortfolio') && !hotelData.platinumPortfolio) showCard = false;
-      }
-
-      if (selectedLandmark && hotelData.landmark !== selectedLandmark) showCard = false;
-      if (selectedZone && hotelData.zone !== selectedZone) showCard = false;
-
-      card.style.display = showCard ? 'block' : 'none';
-    });
-  }
 
   function sendRequestAndPoll(requestData, startTime, minLoadingTime) {
     const maxRetries = 12; // 12 attempts = 60 seconds total (5 sec each)
@@ -156,26 +120,14 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   function displayHotels(hotels) {
-    resultsSection.innerHTML = `
-      <h2>Hotel Search Results</h2>
-      <div class="results-header">
-        <select class="sort-select" onchange="sortHotels(this.value)">
-          <option value="suggested">Sort by: Suggested</option>
-          <option value="priceLow">Price: Low to High</option>
-          <option value="priceHigh">Price: High to Low</option>
-          <option value="rating">Rating: High to Low</option>
-        </select>
-        <button class="show-map">Show map</button>
-      </div>
-    `;
+    resultsSection.innerHTML = "<h2>Hotel Search Results</h2>";
 
     if (!hotels || hotels.length === 0) {
       resultsSection.innerHTML += "<p>No hotels found for your criteria.</p>";
       return;
     }
 
-    const resultsGrid = document.createElement('div');
-    resultsGrid.className = 'results-grid';
+    resultsSection.innerHTML += `<div class="results-grid">`;
     hotels.forEach(hotel => {
       const imageUrl = hotel.images && hotel.images[0]?.url ? hotel.images[0].url : "https://via.placeholder.com/300x200?text=No+Image";
       let hotelRooms = hotel.rooms || hotel.rates || []; // Handle both 'rooms' and 'rates' from Hotelbeds
@@ -183,38 +135,34 @@ document.addEventListener("DOMContentLoaded", () => {
       hotelRooms.forEach(room => {
         let minRate = room.minRate || "N/A";
         let maxRate = room.maxRate || "N/A";
-        let currency = room.currency || "MYR"; // Default to MYR as per screenshot
+        let currency = room.currency || "EUR"; // Default to EUR, adjust as needed for Booking.com style
         let freeCancellation = room.freeCancellation ? `Free cancellation until ${new Date().toISOString().split('T')[0]}` : null;
-        let placesLeft = Math.floor(Math.random() * 5) + 1; // Simulate places left (random for demo)
 
-        const card = document.createElement('div');
-        card.className = 'hotel-card';
-        card.dataset.hotel = encodeURIComponent(JSON.stringify(hotel));
-        card.innerHTML = `
-          <div class="hotel-image">
-            <img src="${imageUrl}" alt="${hotel.name || "Unnamed Hotel"}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Error'">
-          </div>
-          <div class="hotel-details">
-            <h3>${hotel.name || "Unnamed Hotel"}</h3>
-            <div class="amenities">
-              <span class="amenity">Parking</span>
-              <span class="amenity">AC</span>
-              <span class="amenity">Wi-Fi</span>
-              <span class="amenity">Gym</span>
+        resultsSection.innerHTML += `
+          <div class="hotel-card" data-hotel="${encodeURIComponent(JSON.stringify(hotel))}">
+            <div class="hotel-image">
+              <img src="${imageUrl}" alt="${hotel.name || "Unnamed Hotel"}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Error'">
             </div>
-            <p class="rating">${hotel.category?.name || "N/A"} <span class="stars">★${"★".repeat(parseInt(hotel.category?.name?.charAt(0)) || 0)}</span></p>
-            <p class="room-type">Double Comfort RO for ${travellers} adults</p>
-            <p class="price">RM ${minRate} <span>(Room Only)</span></p>
-            ${freeCancellation ? `<p class="cancellation">${freeCancellation} (${placesLeft} places left!)</p>` : ''}
-            <button class="add-button">Add</button>
-            <button class="view-rooms">View Rooms</button>
-            <button class="compare-button">Compare</button>
-          </div>
-        `;
-        resultsGrid.appendChild(card);
+            <div class="hotel-details">
+              <h3>${hotel.name || "Unnamed Hotel"}</h3>
+              <div class="amenities">
+                <span class="amenity">Parking</span>
+                <span class="amenity">AC</span>
+                <span class="amenity">Wi-Fi</span>
+                <span class="amenity">Gym</span>
+              </div>
+              <p class="rating">${hotel.category?.name || "N/A"} <span class="stars">★${"★".repeat(parseInt(hotel.category?.name?.charAt(0)) || 0)}</span></p>
+              <p class="location">${hotel.zoneName || "N/A"}, ${hotel.destinationName || "N/A"}</p>
+              <p class="coordinates">Lat: ${hotel.latitude || "N/A"}, Long: ${hotel.longitude || "N/A"}</p>
+              <p class="description">${hotel.description || "No description available."}</p>
+              <p class="price">Price: ${minRate} <span>${currency}</span></p>
+              ${freeCancellation ? `<p class="cancellation">${freeCancellation}</p>` : ''}
+              <button class="book-now">Book Now</button>
+            </div>
+          </div>`;
       });
     });
-    resultsSection.appendChild(resultsGrid);
+    resultsSection.innerHTML += `</div>`;
 
     // Add interactivity to hotel cards
     document.querySelectorAll('.hotel-card').forEach(card => {
@@ -237,9 +185,9 @@ document.addEventListener("DOMContentLoaded", () => {
 
       // Add click to expand card details (optional interactivity)
       card.addEventListener('click', (e) => {
-        if (!e.target.closest('.add-button, .view-rooms, .compare-button')) {
+        if (!e.target.closest('.book-now')) {
           const details = card.querySelector('.description');
-          if (details) { // Check if description exists (not added in this version, but for future expansion)
+          if (details) {
             if (details.style.maxHeight === 'none') {
               details.style.maxHeight = '4.2em';
               details.style.overflow = 'hidden';
@@ -253,45 +201,12 @@ document.addEventListener("DOMContentLoaded", () => {
         }
       });
 
-      // Add button interactions
-      card.querySelector('.add-button').addEventListener('click', (e) => {
+      // Add click event for "Book Now" button
+      card.querySelector('.book-now').addEventListener('click', (e) => {
         const hotelData = JSON.parse(decodeURIComponent(card.dataset.hotel));
-        alert(`Added ${hotelData.name} to cart - Contact us for more details!`); // Placeholder for real functionality
-      });
-
-      card.querySelector('.view-rooms').addEventListener('click', (e) => {
-        const hotelData = JSON.parse(decodeURIComponent(card.dataset.hotel));
-        alert(`View rooms for ${hotelData.name} - Contact us for more details!`); // Placeholder for real functionality
-      });
-
-      card.querySelector('.compare-button').addEventListener('click', (e) => {
-        const hotelData = JSON.parse(decodeURIComponent(card.dataset.hotel));
-        alert(`Compare ${hotelData.name} - Contact us for more details!`); // Placeholder for real functionality
+        alert(`Booking ${hotelData.name} - Contact us for more details!`); // Placeholder for real booking functionality
+        // Optional: Add actual booking logic (e.g., redirect to booking page, API call)
       });
     });
-
-    // Sort hotels function (simplified, can be expanded)
-    window.sortHotels = function (sortBy) {
-      const cards = Array.from(document.querySelectorAll('.hotel-card'));
-      cards.sort((a, b) => {
-        const hotelA = JSON.parse(decodeURIComponent(a.dataset.hotel));
-        const hotelB = JSON.parse(decodeURIComponent(b.dataset.hotel));
-        const roomA = hotelA.rates[0] || { minRate: 0 };
-        const roomB = hotelB.rates[0] || { minRate: 0 };
-        const starsA = parseInt(hotelA.category?.name?.charAt(0) || 0);
-        const starsB = parseInt(hotelB.category?.name?.charAt(0) || 0);
-
-        switch (sortBy) {
-          case 'priceLow':
-            return roomA.minRate - roomB.minRate;
-          case 'priceHigh':
-            return roomB.minRate - roomA.minRate;
-          case 'rating':
-            return starsB - starsA;
-          default:
-            return 0; // Suggested (no sorting)
-        }
-      }).forEach(card => resultsGrid.appendChild(card));
-    };
   }
 });
