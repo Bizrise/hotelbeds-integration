@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadingIndicator.style.borderRadius = '6px';
     loadingIndicator.style.backgroundColor = '#f5f5f5';
     loadingIndicator.style.textAlign = 'center';
-    loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait (15 seconds).</p>';
+    loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait (35 seconds).</p>';
     document.querySelector('.booking-card').appendChild(loadingIndicator);
 });
 
@@ -78,8 +78,8 @@ form.addEventListener('submit', async (e) => {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        // Wait for 15 seconds before processing the response
-        await new Promise(resolve => setTimeout(resolve, 15000)); // 15 seconds delay
+        // Wait for 35 seconds before processing the response
+        await new Promise(resolve => setTimeout(resolve, 35000)); // 35 seconds delay
 
         const result = await response.json();
 
@@ -90,7 +90,7 @@ form.addEventListener('submit', async (e) => {
     } catch (error) {
         console.error('Error sending data to webhook:', error);
         // Hide loading indicator and show error after delay
-        await new Promise(resolve => setTimeout(resolve, 15000)); // 15 seconds delay
+        await new Promise(resolve => setTimeout(resolve, 35000)); // 35 seconds delay
         loadingIndicator.style.display = 'none';
         displayResults({ error: 'There was an error processing your request. Please try again.' });
     }
