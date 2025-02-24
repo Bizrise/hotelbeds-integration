@@ -18,15 +18,22 @@ body {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
+  transition: padding 0.3s ease;
 }
 
 header {
   text-align: center;
   padding: 30px 0;
   background-color: #fff;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
-  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  border-radius: 10px;
   margin-bottom: 20px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+header:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 h1 {
@@ -35,23 +42,31 @@ h1 {
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: color 0.3s ease;
+}
+
+h1:hover {
+  color: #00264d;
 }
 
 #hotelSearchForm {
   background-color: #fff;
   padding: 20px;
-  border-radius: 8px;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  border-radius: 10px;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   margin-bottom: 30px;
   display: flex;
   gap: 15px;
   flex-wrap: wrap;
   align-items: center;
-  transition: box-shadow 0.3s ease;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  cursor: pointer;
 }
 
 #hotelSearchForm:hover {
-  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
 }
 
 #hotelSearchForm input {
@@ -61,15 +76,17 @@ h1 {
   font-size: 1rem;
   flex: 1;
   min-width: 200px;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
   background-color: #f9f9f9;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) inset;
 }
 
 #hotelSearchForm input:focus {
   border-color: #003580;
   outline: none;
-  box-shadow: 0 0 5px rgba(0, 53, 128, 0.3);
+  box-shadow: 0 0 6px rgba(0, 53, 128, 0.3), 0 1px 3px rgba(0, 0, 0, 0.05) inset;
   background-color: #fff;
+  transform: scale(1.02);
 }
 
 #hotelSearchForm button {
@@ -80,15 +97,17 @@ h1 {
   border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 #hotelSearchForm button:hover {
   background-color: #00264d;
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 .loading {
@@ -97,6 +116,10 @@ h1 {
   text-align: center;
   padding: 20px;
   animation: pulse 1.5s infinite;
+  background-color: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  transition: opacity 0.3s ease;
 }
 
 @keyframes pulse { 
@@ -111,6 +134,12 @@ h1 {
   font-size: 1.8rem;
   font-weight: 600;
   text-transform: capitalize;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+  transition: color 0.3s ease;
+}
+
+#results h2:hover {
+  color: #00264d;
 }
 
 .results-grid {
@@ -118,20 +147,28 @@ h1 {
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 20px;
   padding: 20px 0;
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 .hotel-card {
   background-color: #fff;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
   position: relative;
+  border: 1px solid #f5f5f5;
 }
 
 .hotel-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 6px 15px rgba(0, 0, 0, 0.15);
+  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
+  opacity: 0.95;
 }
 
 .hotel-image img {
@@ -139,17 +176,19 @@ h1 {
   height: 200px;
   object-fit: cover;
   border-bottom: 2px solid #f5f5f5;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 .hotel-image img:hover {
   opacity: 0.9;
+  transform: scale(1.05);
 }
 
 .hotel-details {
   padding: 15px;
   background-color: #fff;
   border-top: 1px solid #f5f5f5;
+  transition: padding 0.3s ease;
 }
 
 .hotel-details h3 {
@@ -161,6 +200,12 @@ h1 {
   text-overflow: ellipsis;
   white-space: nowrap;
   overflow: hidden;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.hotel-details h3:hover {
+  color: #00264d;
+  transform: translateX(2px);
 }
 
 .rating {
@@ -170,11 +215,21 @@ h1 {
   display: flex;
   align-items: center;
   gap: 5px;
+  transition: color 0.3s ease;
+}
+
+.rating:hover {
+  color: #003580;
 }
 
 .stars {
   color: #ffba00;
   font-size: 1rem;
+  transition: color 0.3s ease;
+}
+
+.stars:hover {
+  color: #e67e00;
 }
 
 .location {
@@ -183,7 +238,7 @@ h1 {
   margin-bottom: 5px;
   text-decoration: none;
   display: inline-block;
-  transition: color 0.3s ease;
+  transition: color 0.3s ease, text-decoration 0.3s ease;
 }
 
 .location:hover {
@@ -196,6 +251,11 @@ h1 {
   font-size: 0.8rem;
   margin-bottom: 10px;
   opacity: 0.8;
+  transition: opacity 0.3s ease;
+}
+
+.coordinates:hover {
+  opacity: 1;
 }
 
 .description {
@@ -209,6 +269,14 @@ h1 {
   display: -webkit-box;
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
+  transition: color 0.3s ease, max-height 0.3s ease;
+}
+
+.description:hover {
+  max-height: none;
+  color: #333;
+  -webkit-line-clamp: unset;
+  overflow: visible;
 }
 
 .price {
@@ -219,12 +287,23 @@ h1 {
   display: flex;
   align-items: center;
   gap: 5px;
+  transition: color 0.3s ease, transform 0.2s ease;
+}
+
+.price:hover {
+  color: #006600;
+  transform: translateX(2px);
 }
 
 .price span {
   font-size: 0.9rem;
   color: #666;
   font-weight: normal;
+  transition: color 0.3s ease;
+}
+
+.price span:hover {
+  color: #444;
 }
 
 .book-now {
@@ -235,17 +314,22 @@ h1 {
   border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
   display: inline-block;
   width: 100%;
   max-width: 200px;
   margin-top: 10px;
   text-align: center;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 .book-now:hover {
   background-color: #005ea6;
   transform: translateY(-2px);
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
 }
 
 @media (max-width: 768px) {
@@ -272,5 +356,8 @@ h1 {
   }
   .hotel-image img {
     height: 150px;
+  }
+  .book-now {
+    max-width: 100%;
   }
 }
