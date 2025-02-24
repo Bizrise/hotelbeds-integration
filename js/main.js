@@ -27,7 +27,7 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Show loading message and start 30-second minimum timer with animation
+    // Show loading message with animation and start 30-second minimum timer
     resultsSection.innerHTML = "<p class='loading'>Searching for hotels... <span class='loader'>Loading...</span></p>";
     const startTime = Date.now();
     const minLoadingTime = 30000; // 30 seconds in milliseconds
@@ -161,21 +161,42 @@ document.addEventListener("DOMContentLoaded", () => {
         card.style.transform = 'translateY(-8px)';
         const details = card.querySelector('.hotel-details');
         details.style.backgroundColor = '#f9f9f9';
+        details.style.padding = '18px';
+        card.querySelector('.hotel-image img').style.opacity = '0.85';
       });
       card.addEventListener('mouseleave', () => {
         card.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
         card.style.transform = 'translateY(-5px)';
         const details = card.querySelector('.hotel-details');
         details.style.backgroundColor = '#fff';
+        details.style.padding = '15px';
+        card.querySelector('.hotel-image img').style.opacity = '1';
+      });
+
+      // Add click to expand card details (optional interactivity)
+      card.addEventListener('click', (e) => {
+        if (!e.target.closest('.book-now')) {
+          const details = card.querySelector('.description');
+          if (details.style.maxHeight === 'none') {
+            details.style.maxHeight = '4.2em';
+            details.style.overflow = 'hidden';
+            details.style.webkitLineClamp = '3';
+          } else {
+            details.style.maxHeight = 'none';
+            details.style.overflow = 'visible';
+            details.style.webkitLineClamp = 'unset';
+          }
+        }
       });
     });
 
-    // Add click event for "Book Now" buttons (optional interactivity, can be customized)
+    // Add click event for "Book Now" buttons (optional interactivity, customizable)
     document.querySelectorAll('.book-now').forEach(button => {
       button.addEventListener('click', (e) => {
         const card = e.target.closest('.hotel-card');
         const hotelData = JSON.parse(decodeURIComponent(card.dataset.hotel));
-        alert(`Booking ${hotelData.name} - Contact us for more details!`); // Placeholder for interactivity
+        alert(`Booking ${hotelData.name} - Contact us for more details!`); // Placeholder, customizable for real booking
+        // Optional: Add actual booking logic (e.g., redirect, API call)
       });
     });
   }
