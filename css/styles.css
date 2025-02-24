@@ -1,25 +1,499 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hotel Explorer</title>
-  <link rel="stylesheet" href="/style.css"> <!-- Link to root path for CSS, ensuring no 404 -->
-</head>
-<body>
-  <header class="container">
-    <h1>Hotel Explorer</h1>
-  </header>
-  <div class="container">
-    <form id="hotelSearchForm">
-      <input type="text" id="destination" placeholder="Destination (e.g., LON)" required>
-      <input type="date" id="checkin" required>
-      <input type="date" id="checkout" required>
-      <input type="number" id="travellers" placeholder="Travellers" min="1" required>
-      <button type="submit">Search Hotels</button>
-    </form>
-    <section id="results"></section>
-  </div>
-  <script src="/main.js"></script> <!-- Link to root path for JavaScript, ensuring no 404 -->
-</body>
-</html>
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+  font-family: 'Poppins', 'Roboto', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+body {
+  background-color: #f7fafc;
+  color: #2d3748;
+  line-height: 1.6;
+  font-size: 14px;
+}
+
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 20px;
+  transition: padding 0.3s ease;
+}
+
+header {
+  text-align: center;
+  padding: 35px 0;
+  background-color: #fff;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  border-radius: 12px;
+  margin-bottom: 25px;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+header:hover {
+  transform: translateY(-3px);
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.12);
+}
+
+h1 {
+  color: #2c5282;
+  font-size: 2.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: color 0.3s ease;
+}
+
+h1:hover {
+  color: #1a4971;
+}
+
+#hotelSearchForm {
+  background-color: #fff;
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  margin-bottom: 30px;
+  display: flex;
+  gap: 15px;
+  flex-wrap: wrap;
+  align-items: center;
+  transition: box-shadow 0.3s ease, transform 0.3s ease;
+  cursor: pointer;
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#hotelSearchForm:hover {
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  transform: translateY(-2px);
+}
+
+#hotelSearchForm input {
+  padding: 14px;
+  border: 1px solid #e2e8f0;
+  border-radius: 6px;
+  font-size: 1rem;
+  flex: 1;
+  min-width: 200px;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+  background-color: #edf2f7;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) inset;
+}
+
+#hotelSearchForm input:focus {
+  border-color: #2c5282;
+  outline: none;
+  box-shadow: 0 0 8px rgba(44, 82, 130, 0.3), 0 1px 3px rgba(0, 0, 0, 0.05) inset;
+  background-color: #fff;
+  transform: scale(1.02);
+  animation: pulseInput 0.5s ease-out;
+}
+
+@keyframes pulseInput {
+  0% { transform: scale(1); box-shadow: 0 0 8px rgba(44, 82, 130, 0.3); }
+  50% { transform: scale(1.03); box-shadow: 0 0 10px rgba(44, 82, 130, 0.4); }
+  100% { transform: scale(1.02); box-shadow: 0 0 8px rgba(44, 82, 130, 0.3); }
+}
+
+#hotelSearchForm button {
+  padding: 14px 28px;
+  background-color: #48bb78;
+  color: #fff;
+  border: none;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  animation: bounce 0.5s ease-out;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-5px); }
+  60% { transform: translateY(-2px); }
+}
+
+#hotelSearchForm button:hover {
+  background-color: #38a169;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15);
+  animation: pulseButton 0.5s ease-in-out;
+}
+
+@keyframes pulseButton {
+  0% { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); }
+  50% { transform: translateY(-4px); box-shadow: 0 6px 14px rgba(0, 0, 0, 0.2); }
+  100% { transform: translateY(-2px); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.15); }
+}
+
+.loading {
+  font-style: italic;
+  color: #4a5568;
+  text-align: center;
+  padding: 20px;
+  animation: pulse 1.5s infinite;
+  background-color: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+  transition: opacity 0.3s ease, transform 0.3s ease;
+}
+
+@keyframes pulse { 
+  0% { opacity: 1; transform: scale(1); } 
+  50% { opacity: 0.7; transform: scale(1.02); } 
+  100% { opacity: 1; transform: scale(1); } 
+}
+
+#results h2 {
+  color: #2c5282;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
+  font-weight: 600;
+  text-transform: capitalize;
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+  transition: color 0.3s ease, transform 0.2s ease;
+  animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+#results h2:hover {
+  color: #1a4971;
+  transform: translateX(2px);
+}
+
+.results-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+  gap: 20px;
+  padding: 20px 0;
+  animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.hotel-card {
+  background-color: #fff;
+  border-radius: 12px;
+  overflow: hidden;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
+  position: relative;
+  border: 1px solid #edf2f7;
+  animation: zoomIn 0.5s ease-out;
+}
+
+@keyframes zoomIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.hotel-card:hover {
+  transform: translateY(-5px);
+  box-shadow: 0 6px 20px rgba(0, 0, 0, 0.15);
+  opacity: 0.95;
+  animation: bounceCard 0.5s ease-out;
+}
+
+@keyframes bounceCard {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(-5px); }
+  40% { transform: translateY(-8px); }
+  60% { transform: translateY(-6px); }
+}
+
+.hotel-image img {
+  width: 100%;
+  height: 200px;
+  object-fit: cover;
+  border-bottom: 2px solid #edf2f7;
+  transition: opacity 0.3s ease, transform 0.3s ease;
+  cursor: pointer;
+}
+
+.hotel-image img:hover {
+  opacity: 0.9;
+  transform: scale(1.05);
+  animation: pulseImage 0.5s ease-in-out;
+}
+
+@keyframes pulseImage {
+  0% { transform: scale(1.05); opacity: 0.9; }
+  50% { transform: scale(1.06); opacity: 0.85; }
+  100% { transform: scale(1.05); opacity: 0.9; }
+}
+
+.hotel-details {
+  padding: 15px;
+  background-color: #fff;
+  border-top: 1px solid #edf2f7;
+  transition: padding 0.3s ease, background-color 0.3s ease;
+}
+
+.hotel-details:hover {
+  background-color: #f7fafc;
+}
+
+.hotel-details h3 {
+  color: #2c5282;
+  font-size: 1.5rem;
+  margin-bottom: 10px;
+  font-weight: 600;
+  line-height: 1.2;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  overflow: hidden;
+  transition: color 0.3s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.hotel-details h3:hover {
+  color: #1a4971;
+  transform: translateX(2px);
+  animation: wiggle 0.3s ease-out;
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(2px); }
+  75% { transform: translateX(-2px); }
+}
+
+.rating {
+  color: #4a5568;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: color 0.3s ease;
+  cursor: pointer;
+}
+
+.rating:hover {
+  color: #2c5282;
+  animation: fadePulse 0.5s ease-in-out;
+}
+
+@keyframes fadePulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.8; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.stars {
+  color: #ffed4a;
+  font-size: 1rem;
+  transition: color 0.3s ease;
+}
+
+.stars:hover {
+  color: #f6e05e;
+  animation: starTwinkle 0.5s ease-in-out infinite;
+}
+
+@keyframes starTwinkle {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
+}
+
+.location {
+  color: #48bb78;
+  font-size: 1rem;
+  margin-bottom: 5px;
+  text-decoration: none;
+  display: inline-block;
+  transition: color 0.3s ease, text-decoration 0.3s ease;
+  cursor: pointer;
+}
+
+.location:hover {
+  color: #38a169;
+  text-decoration: underline;
+  animation: underlineGrow 0.3s ease-out;
+}
+
+@keyframes underlineGrow {
+  from { text-decoration: none; }
+  to { text-decoration: underline; transform: scale(1.02); }
+}
+
+.coordinates {
+  color: #4a5568;
+  font-size: 0.8rem;
+  margin-bottom: 10px;
+  opacity: 0.8;
+  transition: opacity 0.3s ease, color 0.3s ease;
+  cursor: pointer;
+}
+
+.coordinates:hover {
+  opacity: 1;
+  color: #2c5282;
+  animation: fadeInCoord 0.3s ease-in;
+}
+
+@keyframes fadeInCoord {
+  from { opacity: 0.8; color: #4a5568; }
+  to { opacity: 1; color: #2c5282; }
+}
+
+.description {
+  color: #4a5568;
+  font-size: 1rem;
+  margin-bottom: 15px;
+  line-height: 1.4;
+  max-height: 4.2em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  transition: color 0.3s ease, max-height 0.3s ease;
+  cursor: pointer;
+}
+
+.description:hover {
+  max-height: none;
+  color: #2d3748;
+  -webkit-line-clamp: unset;
+  overflow: visible;
+  animation: expandText 0.5s ease-out;
+  background-color: #f7fafc;
+  padding: 5px;
+  border-radius: 6px;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+@keyframes expandText {
+  from { max-height: 4.2em; opacity: 0.9; transform: scale(1); }
+  to { max-height: none; opacity: 1; transform: scale(1.02); }
+}
+
+.price {
+  color: #48bb78;
+  font-size: 1.2rem;
+  font-weight: bold;
+  margin-bottom: 15px;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  transition: color 0.3s ease, transform 0.2s ease;
+  cursor: pointer;
+}
+
+.price:hover {
+  color: #38a169;
+  transform: translateX(2px);
+  animation: pricePulse 0.5s ease-in-out;
+}
+
+@keyframes pricePulse {
+  0% { transform: translateX(0); color: #48bb78; }
+  50% { transform: translateX(4px); color: #38a169; }
+  100% { transform: translateX(2px); color: #38a169; }
+}
+
+.price span {
+  font-size: 0.9rem;
+  color: #4a5568;
+  font-weight: normal;
+  transition: color 0.3s ease;
+  cursor: pointer;
+}
+
+.price span:hover {
+  color: #2d3748;
+  animation: textFade 0.3s ease-in;
+}
+
+@keyframes textFade {
+  from { color: #4a5568; opacity: 0.8; }
+  to { color: #2d3748; opacity: 1; }
+}
+
+.book-now {
+  background-color: #2c5282;
+  color: #fff;
+  border: none;
+  padding: 12px 22px;
+  border-radius: 6px;
+  font-size: 1rem;
+  cursor: pointer;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  display: inline-block;
+  width: 100%;
+  max-width: 200px;
+  margin-top: 12px;
+  text-align: center;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.1);
+  animation: buttonAppear 0.5s ease-out;
+}
+
+@keyframes buttonAppear {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
+}
+
+.book-now:hover {
+  background-color: #1a4971;
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+  animation: buttonPulse 0.5s ease-in-out;
+}
+
+@keyframes buttonPulse {
+  0% { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
+  50% { transform: translateY(-4px); box-shadow: 0 6px 16px rgba(0, 0, 0, 0.2); }
+  100% { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15); }
+}
+
+@media (max-width: 768px) {
+  #hotelSearchForm {
+    flex-direction: column;
+  }
+  #hotelSearchForm input, #hotelSearchForm button {
+    width: 100%;
+  }
+  .results-grid {
+    grid-template-columns: 1fr;
+  }
+  header {
+    padding: 20px 0;
+  }
+  h1 {
+    font-size: 2.2rem;
+  }
+  #results h2 {
+    font-size: 1.5rem;
+  }
+  .hotel-details h3 {
+    font-size: 1.3rem;
+  }
+  .hotel-image img {
+    height: 150px;
+  }
+  .book-now {
+    max-width: 100%;
+  }
+}
