@@ -27,8 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Show loading message and start 30-second minimum timer
-    resultsSection.innerHTML = "<p>Waiting for hotel results... <span class='loading'>Loading...</span></p>";
+    // Show loading message and start 30-second minimum timer with animation
+    resultsSection.innerHTML = "<p class='loading'>Searching for hotels... <span class='loader'>Loading...</span></p>";
     const startTime = Date.now();
     const minLoadingTime = 30000; // 30 seconds in milliseconds
 
@@ -136,7 +136,7 @@ document.addEventListener("DOMContentLoaded", () => {
         let maxRate = room.maxRate || "N/A";
         let currency = room.currency || "EUR";
         resultsSection.innerHTML += `
-          <div class="hotel-card">
+          <div class="hotel-card" data-hotel="${encodeURIComponent(JSON.stringify(hotel))}">
             <div class="hotel-image">
               <img src="${imageUrl}" alt="${hotel.name || "Unnamed Hotel"}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Error'">
             </div>
@@ -153,5 +153,30 @@ document.addEventListener("DOMContentLoaded", () => {
       });
     });
     resultsSection.innerHTML += `</div>`;
+
+    // Add interactivity to hotel cards
+    document.querySelectorAll('.hotel-card').forEach(card => {
+      card.addEventListener('mouseenter', () => {
+        card.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.2)';
+        card.style.transform = 'translateY(-8px)';
+        const details = card.querySelector('.hotel-details');
+        details.style.backgroundColor = '#f9f9f9';
+      });
+      card.addEventListener('mouseleave', () => {
+        card.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
+        card.style.transform = 'translateY(-5px)';
+        const details = card.querySelector('.hotel-details');
+        details.style.backgroundColor = '#fff';
+      });
+    });
+
+    // Add click event for "Book Now" buttons (optional interactivity, can be customized)
+    document.querySelectorAll('.book-now').forEach(button => {
+      button.addEventListener('click', (e) => {
+        const card = e.target.closest('.hotel-card');
+        const hotelData = JSON.parse(decodeURIComponent(card.dataset.hotel));
+        alert(`Booking ${hotelData.name} - Contact us for more details!`); // Placeholder for interactivity
+      });
+    });
   }
 });
