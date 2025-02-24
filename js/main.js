@@ -2,22 +2,43 @@ document.addEventListener("DOMContentLoaded", () => {
   const form = document.getElementById("hotelSearchForm");
   const resultsSection = document.getElementById("results");
 
+  // Mock hotel data (your provided data, adjusted to match expected structure)
+  const mockHotelData = [
+    {
+      "code": 6547,
+      "name": "The Royal Horseguards Hotel London",
+      "categoryCode": "5EST",
+      "categoryName": "5 STARS",
+      "destinationCode": "LON",
+      "destinationName": "London",
+      "zoneCode": 51,
+      "zoneName": "Westminster",
+      "rooms": [
+        {
+          "minRate": 1273.05,
+          "maxRate": 5149.32,
+          "currency": "EUR"
+        }
+      ]
+    }
+  ];
+
+  // Display the mock data immediately for testing
+  displayHotels(mockHotelData);
+
   form.addEventListener("submit", function (event) {
     event.preventDefault();
 
-    // Get input values
     const destinationInput = document.getElementById("destination").value.trim().toUpperCase();
     const checkin = document.getElementById("checkin").value;
     const checkout = document.getElementById("checkout").value;
     const travellers = document.getElementById("travellers").value;
 
-    // Validate destination code (3-letter code like "LON", "DXB")
     if (!/^[A-Z]{3}$/.test(destinationInput)) {
       alert("Please enter a valid three-letter airport code (e.g., DXB, LON, PAR).");
       return;
     }
 
-    // Validate check-in & check-out dates
     const today = new Date();
     today.setHours(0, 0, 0, 0);
     const checkinDate = new Date(checkin);
@@ -27,18 +48,13 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Show loading message
     resultsSection.innerHTML = "<p>Waiting for hotel results... <span class='loading'>Loading...</span></p>";
-
-    // Data object to send
     const requestData = { destination: destinationInput, checkin, checkout, travellers };
-
-    // Start polling for data (will try up to 12 times = 60 seconds total)
     sendRequestAndPoll(requestData);
   });
 
   function sendRequestAndPoll(requestData) {
-    const maxRetries = 12; // 12 attempts = 60 seconds total (5 sec each)
+    const maxRetries = 12;
     let attempt = 0;
 
     function fetchData() {
@@ -47,9 +63,8 @@ document.addEventListener("DOMContentLoaded", () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(requestData)
       })
-        .then(response => response.text()) // Read response as plain text
+        .then(response => response.text())
         .then(text => {
-          // Check if response starts with "Accepted"
           if (text.trim().startsWith("Accepted")) {
             if (attempt < maxRetries) {
               attempt++;
@@ -60,7 +75,6 @@ document.addEventListener("DOMContentLoaded", () => {
             }
             return;
           }
-          // Otherwise, try to parse the JSON
           try {
             const data = JSON.parse(text);
             let parsedData = typeof data.data === "string" ? JSON.parse(data.data) : data.data;
@@ -85,7 +99,7 @@ document.addEventListener("DOMContentLoaded", () => {
         });
     }
 
-    fetchData(); // Start polling
+    fetchData();
   }
 
   function displayHotels(hotels) {
@@ -114,17 +128,16 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     resultsSection.innerHTML += `</div>`;
   }
-});
 
-// Add CSS dynamically
-const styles = `
-  .loading { font-style: italic; color: #666; animation: pulse 1.5s infinite; }
-  @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-  .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
-  .hotel-card { border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 5px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
-  .hotel-card h3 { margin: 0 0 5px; font-size: 16px; color: #333; }
-  .hotel-card p { margin: 0 0 10px; font-size: 14px; color: #666; }
-`;
-const styleSheet = document.createElement("style");
-styleSheet.textContent = styles;
-document.head.appendChild(styleSheet);
+  const styles = `
+    .loading { font-style: italic; color: #666; animation: pulse 1.5s infinite; }
+    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
+    .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; }
+    .hotel-card { border: 1px solid #ddd; padding: 10px; margin: 10px 0; border-radius: 5px; box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1); }
+    .hotel-card h3 { margin: 0 0 5px; font-size: 16px; color: #333; }
+    .hotel-card p { margin: 0 0 10px; font-size: 14px; color: #666; }
+  `;
+  const styleSheet = document.createElement("style");
+  styleSheet.textContent = styles;
+  document.head.appendChild(styleSheet);
+});
