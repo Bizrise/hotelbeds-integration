@@ -34,7 +34,52 @@
             </div>
             <button type="submit">Search Stays</button>
         </form>
-        <div id="results"></div>
+        <div id="results" class="results-container">
+            <div class="filters">
+                <div class="filter-section">
+                    <h3>Board</h3>
+                    <label><input type="checkbox" name="board" value="room_only"> Room Only (RO)</label>
+                    <label><input type="checkbox" name="board" value="breakfast"> Inc. Breakfast</label>
+                    <label><input type="checkbox" name="board" value="half_board"> Half Board</label>
+                    <label><input type="checkbox" name="board" value="self_catering"> Self Catering Apartments</label>
+                </div>
+                <div class="filter-section">
+                    <h3>Rating</h3>
+                    <label><input type="checkbox" name="rating" value="5"> ★★★★★</label>
+                    <label><input type="checkbox" name="rating" value="4"> ★★★★</label>
+                    <label><input type="checkbox" name="rating" value="3"> ★★★</label>
+                </div>
+                <div class="filter-section">
+                    <h3>Zone</h3>
+                    <label><input type="checkbox" name="zone" value="tokyo_city"> Tokyo City</label>
+                    <label><input type="checkbox" name="zone" value="shinagawa"> Shinagawa</label>
+                    <label><input type="checkbox" name="zone" value="haneda_airport"> Haneda Airport</label>
+                    <label><input type="checkbox" name="zone" value="shibuya"> Shibuya</label>
+                </div>
+                <button id="applyFilters">Apply</button>
+            </div>
+            <div class="results-header">
+                <span>288 Hotels</span>
+                <div class="sort-results">
+                    <label>Sort by:</label>
+                    <select id="sortBy">
+                        <option value="suggested">Suggested</option>
+                        <option value="price_low">Price: Low to High</option>
+                        <option value="price_high">Price: High to Low</option>
+                    </select>
+                </div>
+                <div class="results-per-page">
+                    <label>Results:</label>
+                    <select id="resultsPerPage">
+                        <option value="20">20</option>
+                        <option value="40">40</option>
+                        <option value="60">60</option>
+                    </select>
+                </div>
+                <button id="showMap">Show Map</button>
+            </div>
+            <div id="hotelList" class="hotel-list"></div>
+        </div>
     </div>
 
     <script src="main.js"></script>
