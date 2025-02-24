@@ -62,6 +62,12 @@ h1:hover {
   align-items: center;
   transition: box-shadow 0.3s ease, transform 0.3s ease;
   cursor: pointer;
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 #hotelSearchForm:hover {
@@ -87,6 +93,13 @@ h1:hover {
   box-shadow: 0 0 6px rgba(0, 53, 128, 0.3), 0 1px 3px rgba(0, 0, 0, 0.05) inset;
   background-color: #fff;
   transform: scale(1.02);
+  animation: pulseInput 0.5s ease-out;
+}
+
+@keyframes pulseInput {
+  0% { transform: scale(1); box-shadow: 0 0 6px rgba(0, 53, 128, 0.3); }
+  50% { transform: scale(1.03); box-shadow: 0 0 8px rgba(0, 53, 128, 0.4); }
+  100% { transform: scale(1.02); box-shadow: 0 0 6px rgba(0, 53, 128, 0.3); }
 }
 
 #hotelSearchForm button {
@@ -102,12 +115,26 @@ h1:hover {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  animation: bounce 0.5s ease-out;
+}
+
+@keyframes bounce {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
+  40% { transform: translateY(-5px); }
+  60% { transform: translateY(-2px); }
 }
 
 #hotelSearchForm button:hover {
   background-color: #00264d;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  animation: pulseButton 0.5s ease-in-out;
+}
+
+@keyframes pulseButton {
+  0% { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); }
+  50% { box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); }
+  100% { box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); }
 }
 
 .loading {
@@ -119,13 +146,13 @@ h1:hover {
   background-color: #fff;
   border-radius: 8px;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 @keyframes pulse { 
-  0% { opacity: 1; } 
-  50% { opacity: 0.7; } 
-  100% { opacity: 1; } 
+  0% { opacity: 1; transform: scale(1); } 
+  50% { opacity: 0.7; transform: scale(1.02); } 
+  100% { opacity: 1; transform: scale(1); } 
 }
 
 #results h2 {
@@ -135,11 +162,18 @@ h1:hover {
   font-weight: 600;
   text-transform: capitalize;
   text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  transition: color 0.3s ease;
+  transition: color 0.3s ease, transform 0.2s ease;
+  animation: slideDown 0.5s ease-out;
+}
+
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-20px); }
+  to { opacity: 1; transform: translateY(0); }
 }
 
 #results h2:hover {
   color: #00264d;
+  transform: translateX(2px);
 }
 
 .results-grid {
@@ -163,12 +197,25 @@ h1:hover {
   transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
   position: relative;
   border: 1px solid #f5f5f5;
+  animation: zoomIn 0.5s ease-out;
+}
+
+@keyframes zoomIn {
+  from { opacity: 0; transform: scale(0.95); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .hotel-card:hover {
   transform: translateY(-5px);
   box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
   opacity: 0.95;
+  animation: bounceCard 0.5s ease-out;
+}
+
+@keyframes bounceCard {
+  0%, 20%, 50%, 80%, 100% { transform: translateY(-5px); }
+  40% { transform: translateY(-8px); }
+  60% { transform: translateY(-6px); }
 }
 
 .hotel-image img {
@@ -177,18 +224,30 @@ h1:hover {
   object-fit: cover;
   border-bottom: 2px solid #f5f5f5;
   transition: opacity 0.3s ease, transform 0.3s ease;
+  cursor: pointer;
 }
 
 .hotel-image img:hover {
   opacity: 0.9;
   transform: scale(1.05);
+  animation: pulseImage 0.5s ease-in-out;
+}
+
+@keyframes pulseImage {
+  0% { transform: scale(1.05); opacity: 0.9; }
+  50% { transform: scale(1.06); opacity: 0.85; }
+  100% { transform: scale(1.05); opacity: 0.9; }
 }
 
 .hotel-details {
   padding: 15px;
   background-color: #fff;
   border-top: 1px solid #f5f5f5;
-  transition: padding 0.3s ease;
+  transition: padding 0.3s ease, background-color 0.3s ease;
+}
+
+.hotel-details:hover {
+  background-color: #f9f9f9;
 }
 
 .hotel-details h3 {
@@ -201,11 +260,19 @@ h1:hover {
   white-space: nowrap;
   overflow: hidden;
   transition: color 0.3s ease, transform 0.2s ease;
+  cursor: pointer;
 }
 
 .hotel-details h3:hover {
   color: #00264d;
   transform: translateX(2px);
+  animation: wiggle 0.3s ease-out;
+}
+
+@keyframes wiggle {
+  0%, 100% { transform: translateX(0); }
+  25% { transform: translateX(2px); }
+  75% { transform: translateX(-2px); }
 }
 
 .rating {
@@ -216,10 +283,18 @@ h1:hover {
   align-items: center;
   gap: 5px;
   transition: color 0.3s ease;
+  cursor: pointer;
 }
 
 .rating:hover {
   color: #003580;
+  animation: fadePulse 0.5s ease-in-out;
+}
+
+@keyframes fadePulse {
+  0% { opacity: 1; }
+  50% { opacity: 0.8; transform: scale(1.05); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
 .stars {
@@ -230,6 +305,13 @@ h1:hover {
 
 .stars:hover {
   color: #e67e00;
+  animation: starTwinkle 0.5s ease-in-out infinite;
+}
+
+@keyframes starTwinkle {
+  0% { opacity: 1; }
+  50% { opacity: 0.7; transform: scale(1.1); }
+  100% { opacity: 1; transform: scale(1); }
 }
 
 .location {
@@ -239,11 +321,18 @@ h1:hover {
   text-decoration: none;
   display: inline-block;
   transition: color 0.3s ease, text-decoration 0.3s ease;
+  cursor: pointer;
 }
 
 .location:hover {
   color: #005ea6;
   text-decoration: underline;
+  animation: underlineGrow 0.3s ease-out;
+}
+
+@keyframes underlineGrow {
+  from { text-decoration: none; }
+  to { text-decoration: underline; transform: scale(1.02); }
 }
 
 .coordinates {
@@ -251,11 +340,19 @@ h1:hover {
   font-size: 0.8rem;
   margin-bottom: 10px;
   opacity: 0.8;
-  transition: opacity 0.3s ease;
+  transition: opacity 0.3s ease, color 0.3s ease;
+  cursor: pointer;
 }
 
 .coordinates:hover {
   opacity: 1;
+  color: #003580;
+  animation: fadeInCoord 0.3s ease-in;
+}
+
+@keyframes fadeInCoord {
+  from { opacity: 0.8; color: #666; }
+  to { opacity: 1; color: #003580; }
 }
 
 .description {
@@ -270,6 +367,7 @@ h1:hover {
   -webkit-line-clamp: 3;
   -webkit-box-orient: vertical;
   transition: color 0.3s ease, max-height 0.3s ease;
+  cursor: pointer;
 }
 
 .description:hover {
@@ -277,6 +375,16 @@ h1:hover {
   color: #333;
   -webkit-line-clamp: unset;
   overflow: visible;
+  animation: expandText 0.5s ease-out;
+  background-color: #f9f9f9;
+  padding: 5px;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+@keyframes expandText {
+  from { max-height: 4.2em; opacity: 0.9; transform: scale(1); }
+  to { max-height: none; opacity: 1; transform: scale(1.02); }
 }
 
 .price {
@@ -288,11 +396,19 @@ h1:hover {
   align-items: center;
   gap: 5px;
   transition: color 0.3s ease, transform 0.2s ease;
+  cursor: pointer;
 }
 
 .price:hover {
   color: #006600;
   transform: translateX(2px);
+  animation: pricePulse 0.5s ease-in-out;
+}
+
+@keyframes pricePulse {
+  0% { transform: translateX(0); color: #008009; }
+  50% { transform: translateX(4px); color: #006600; }
+  100% { transform: translateX(2px); color: #006600; }
 }
 
 .price span {
@@ -300,10 +416,17 @@ h1:hover {
   color: #666;
   font-weight: normal;
   transition: color 0.3s ease;
+  cursor: pointer;
 }
 
 .price span:hover {
   color: #444;
+  animation: textFade 0.3s ease-in;
+}
+
+@keyframes textFade {
+  from { color: #666; opacity: 0.8; }
+  to { color: #444; opacity: 1; }
 }
 
 .book-now {
@@ -324,12 +447,25 @@ h1:hover {
   text-transform: uppercase;
   letter-spacing: 0.5px;
   box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  animation: buttonAppear 0.5s ease-out;
+}
+
+@keyframes buttonAppear {
+  from { opacity: 0; transform: scale(0.9); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 .book-now:hover {
   background-color: #005ea6;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
+  animation: buttonPulse 0.5s ease-in-out;
+}
+
+@keyframes buttonPulse {
+  0% { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); }
+  50% { transform: translateY(-4px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); }
+  100% { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); }
 }
 
 @media (max-width: 768px) {
