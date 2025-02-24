@@ -97,6 +97,14 @@ input:focus, select:focus {
     background: #005ecc;
 }
 
+#resultsContainer {
+    margin-top: 20px;
+    padding: 15px;
+    border-radius: 6px;
+    background-color: #f8f9fa;
+    display: none;
+}
+
 @media (max-width: 768px) {
     .form-grid {
         grid-template-columns: 1fr;
