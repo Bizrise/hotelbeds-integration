@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadingIndicator.style.borderRadius = '6px';
     loadingIndicator.style.backgroundColor = '#f5f5f5';
     loadingIndicator.style.textAlign = 'center';
-    loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait (35 seconds).</p>';
+    loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait (15 seconds).</p>';
     document.querySelector('.booking-card').appendChild(loadingIndicator);
 });
 
@@ -78,8 +78,8 @@ form.addEventListener('submit', async (e) => {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        // Wait for 35 seconds before processing the response
-        await new Promise(resolve => setTimeout(resolve, 35000)); // 35 seconds delay
+        // Wait for 15 seconds before processing the response
+        await new Promise(resolve => setTimeout(resolve, 15000)); // 15 seconds delay
 
         const result = await response.json();
 
@@ -90,7 +90,7 @@ form.addEventListener('submit', async (e) => {
     } catch (error) {
         console.error('Error sending data to webhook:', error);
         // Hide loading indicator and show error after delay
-        await new Promise(resolve => setTimeout(resolve, 35000)); // 35 seconds delay
+        await new Promise(resolve => setTimeout(resolve, 15000)); // 15 seconds delay
         loadingIndicator.style.display = 'none';
         displayResults({ error: 'There was an error processing your request. Please try again.' });
     }
@@ -106,21 +106,37 @@ function displayResults(result) {
     } else {
         resultsContainer.style.backgroundColor = '#e8f5e9'; // Light green for success
         resultsContainer.innerHTML = '<h3>Your Search Results:</h3>';
-        
-        // Assuming the result contains hotel data or a message
+
+        // Check if the result has hotels
         if (result.hotels && Array.isArray(result.hotels)) {
             result.hotels.forEach((hotel, index) => {
+                // Extract hotel details from the response
+                const hotelName = hotel.name || 'Unknown Hotel';
+                const hotelCode = hotel['code'] || 'N/A';
+                const location = hotel.destinationName || hotel.destinationCode || 'N/A';
+                
+                // Extract rate details (assuming multiple rates might exist)
+                let rateInfo = 'N/A';
+                if (hotel.rates && Array.isArray(hotel.rates)) {
+                    const rate = hotel.rates[0] || {}; // Take the first rate for simplicity
+                    const rateKey = rate.rateKey || 'N/A';
+                    const price = rate.amount ? `$${rate.amount}` : 'N/A';
+                    const cancellationPolicy = rate.cancellationPolicies && rate.cancellationPolicies.length > 0 
+                        ? `Cancel by ${rate.cancellationPolicies[0].from} for $${rate.cancellationPolicies[0].amount}` 
+                        : 'N/A';
+                    rateInfo = `${price} | ${cancellationPolicy} | Rate Key: ${rateKey}`;
+                }
+
                 resultsContainer.innerHTML += `
                     <div style="margin-top: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-                        <h4>${index + 1}. ${hotel.name || 'Hotel Name'}</h4>
-                        <p>Location: ${hotel.location || 'N/A'}</p>
-                        <p>Price: ${hotel.price || 'N/A'}</p>
-                        <p>Availability: ${hotel.availability || 'N/A'}</p>
+                        <h4>${index + 1}. ${hotelName} (Code: ${hotelCode})</h4>
+                        <p>Location: ${location}</p>
+                        <p>Price & Policy: ${rateInfo}</p>
                     </div>
                 `;
             });
         } else {
-            resultsContainer.innerHTML += `<p>${JSON.stringify(result) || 'No results found.'}</p>`;
+            resultsContainer.innerHTML += `<p>No hotels found or invalid response format.</p>`;
         }
     }
 
