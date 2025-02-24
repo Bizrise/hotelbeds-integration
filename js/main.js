@@ -22,7 +22,6 @@ document.addEventListener("DOMContentLoaded", () => {
     today.setHours(0, 0, 0, 0);
     const checkinDate = new Date(checkin);
     const checkoutDate = new Date(checkout);
-
     if (isNaN(checkinDate) || isNaN(checkoutDate) || checkoutDate <= checkinDate || checkinDate < today) {
       alert("Please enter valid dates, with check-out after check-in and check-in in the future.");
       return;
@@ -34,48 +33,50 @@ document.addEventListener("DOMContentLoaded", () => {
     // Data object to send
     const requestData = { destination: destinationInput, checkin, checkout, travellers };
 
-    // Start polling for data
+    // Start polling for data (will try up to 12 times = 60 seconds total)
     sendRequestAndPoll(requestData);
   });
 
   function sendRequestAndPoll(requestData) {
-    const maxRetries = 6; // Retry up to 6 times (30 seconds total)
+    const maxRetries = 12; // 12 attempts = 60 seconds total (5 sec each)
     let attempt = 0;
 
     function fetchData() {
       fetch("https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestData),
+        body: JSON.stringify(requestData)
       })
-        .then(response => response.text()) // Read as plain text first
+        .then(response => response.text()) // Read response as plain text
         .then(text => {
-          if (text.trim() === "Accepted") {
+          // Check if response starts with "Accepted"
+          if (text.trim().startsWith("Accepted")) {
             if (attempt < maxRetries) {
               attempt++;
-              setTimeout(fetchData, 5000); // Wait 5 seconds and retry
+              console.log(`Attempt ${attempt}: Response is "Accepted". Retrying in 5 seconds...`);
+              setTimeout(fetchData, 5000);
             } else {
-              resultsSection.innerHTML = `<p>No hotels found after multiple attempts.</p>`;
+              resultsSection.innerHTML = "<p>No hotels found after multiple attempts.</p>";
             }
             return;
           }
-
+          // Otherwise, try to parse the JSON
           try {
-            const data = JSON.parse(text); // Now parse JSON safely
+            const data = JSON.parse(text);
             let parsedData = typeof data.data === "string" ? JSON.parse(data.data) : data.data;
             const hotels = parsedData?.data?.hotels?.hotels || [];
-
             if (hotels.length > 0) {
               displayHotels(hotels);
             } else if (attempt < maxRetries) {
               attempt++;
-              setTimeout(fetchData, 5000); // Retry every 5 seconds
+              console.log(`Attempt ${attempt}: No hotels yet. Retrying in 5 seconds...`);
+              setTimeout(fetchData, 5000);
             } else {
-              resultsSection.innerHTML = `<p>No hotels found for your criteria.</p>`;
+              resultsSection.innerHTML = "<p>No hotels found for your criteria after multiple attempts.</p>";
             }
           } catch (error) {
             console.error("Data parsing error:", error);
-            resultsSection.innerHTML = `<p>Unable to process hotel data. Please try again later.</p>`;
+            resultsSection.innerHTML = "<p>Unable to process hotel data. Please try again later.</p>";
           }
         })
         .catch(error => {
@@ -102,7 +103,6 @@ document.addEventListener("DOMContentLoaded", () => {
         let minRate = room.minRate || "N/A";
         let maxRate = room.maxRate || "N/A";
         let currency = room.currency || "EUR";
-
         resultsSection.innerHTML += `
           <div class="hotel-card">
             <h3>${hotel.name}</h3>
