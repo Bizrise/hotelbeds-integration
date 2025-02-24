@@ -11,14 +11,14 @@
     <header>
       <h1>Hotel Finder</h1>
     </header>
-    <form id="hotelSearchForm">
-      <input type="text" id="destination" placeholder="Destination (e.g., TOKYO)" required>
+    <form id="hotelSearchForm" class="search-form">
+      <input type="text" id="destination" placeholder="Enter city or destination" required>
       <input type="date" id="checkin" required>
       <input type="date" id="checkout" required>
-      <input type="number" id="travellers" placeholder="Travellers" min="1" required>
-      <button type="submit">Search Hotels</button>
+      <input type="number" id="travellers" placeholder="No. of Travellers" min="1" required>
+      <button type="submit">Search</button>
     </form>
-    <section id="results"></section>
+    <section id="results" class="results"></section>
   </div>
   <script src="/main.js"></script> <!-- Link to root path for JavaScript, ensuring no 404 -->
 </body>
