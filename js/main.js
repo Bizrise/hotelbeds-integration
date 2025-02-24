@@ -1,3 +1,14 @@
+// Populate travellers dropdown with options from 1 to 100
+document.addEventListener('DOMContentLoaded', () => {
+    const travellersSelect = document.getElementById('travellers');
+    for (let i = 1; i <= 100; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = `${i} Traveller${i > 1 ? 's' : ''}`;
+        travellersSelect.appendChild(option);
+    }
+});
+
 // Basic form validation and submission handling
 const form = document.querySelector('.form-grid');
 form.addEventListener('submit', (e) => {
@@ -17,6 +28,4 @@ form.addEventListener('submit', (e) => {
 
     // Simple alert to simulate booking (replace with actual API call or logic)
     alert(`Searching for hotels in ${destination} from ${checkin} to ${checkout} for ${travellers} travellers...`);
-    
-    // You can add more complex logic here, like an API call to a hotel booking service
 });
