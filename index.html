@@ -4,60 +4,22 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Hotel Finder</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="/style.css"> <!-- Link to root path for CSS, ensuring no 404 -->
 </head>
 <body>
-
-  <!-- Navigation Bar -->
-  <nav>
-    <div class="logo">SEDUNIA <span>travel</span></div>
-    <ul class="nav-links">
-      <li><a href="#">Home</a></li>
-      <li><a href="#">Special Offers</a></li>
-      <li><a href="#">FAQ</a></li>
-      <li><a href="#">Contact Us</a></li>
-      <li><a href="#" class="profile-icon">👤</a></li>
-    </ul>
-  </nav>
-
-  <!-- Hero Section -->
-  <header class="hero">
-    <h1>Tokyo</h1>
-    <p>Nov 20 - Nov 26, 2 Adults</p>
-    <button class="modify-search">Modify Search</button>
-  </header>
-
-  <!-- Search Filters -->
-  <div class="filters-container">
-    <div class="filters">
-      <h3>288 Hotels</h3>
-      <input type="text" placeholder="Hotel Name">
-      <h4>Board</h4>
-      <label><input type="checkbox"> Room Only</label>
-      <label><input type="checkbox"> Incl. Breakfast</label>
-      <label><input type="checkbox"> Half Board</label>
-      <h4>Category</h4>
-      <label><input type="checkbox"> ⭐⭐⭐</label>
-      <label><input type="checkbox"> ⭐⭐⭐⭐</label>
-      <label><input type="checkbox"> ⭐⭐⭐⭐⭐</label>
-      <button class="apply-filter">Apply</button>
-    </div>
-
-    <!-- Hotel Results -->
-    <div class="hotel-results">
-      <div class="sort-results">
-        <label>Sort by: 
-          <select>
-            <option>Suggested</option>
-            <option>Price Low to High</option>
-            <option>Price High to Low</option>
-          </select>
-        </label>
-      </div>
-      <div id="results"></div>
-    </div>
+  <div class="container">
+    <header>
+      <h1>Hotel Finder</h1>
+    </header>
+    <form id="hotelSearchForm">
+      <input type="text" id="destination" placeholder="Destination (e.g., TOKYO)" required>
+      <input type="date" id="checkin" required>
+      <input type="date" id="checkout" required>
+      <input type="number" id="travellers" placeholder="Travellers" min="1" required>
+      <button type="submit">Search Hotels</button>
+    </form>
+    <section id="results"></section>
   </div>
-
-  <script src="main.js"></script>
+  <script src="/main.js"></script> <!-- Link to root path for JavaScript, ensuring no 404 -->
 </body>
 </html>
