@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .then(text => {
           const elapsedTime = Date.now() - startTime;
-          console.log("Elapsed time:", elapsedTime, "Response:", text); // Debug log
+          console.log("Loading started at:", new Date(startTime).toISOString(), "Elapsed time:", elapsedTime, "Response:", text); // Enhanced debug log
 
           // Check if response starts with "Accepted"
           if (text.trim().startsWith("Accepted")) {
@@ -195,8 +195,8 @@ document.addEventListener("DOMContentLoaded", () => {
       button.addEventListener('click', (e) => {
         const card = e.target.closest('.hotel-card');
         const hotelData = JSON.parse(decodeURIComponent(card.dataset.hotel));
-        alert(`Booking ${hotelData.name} - Contact us for more details!`); // Placeholder, customizable for real booking
-        // Optional: Add actual booking logic (e.g., redirect, API call)
+        alert(`Booking ${hotelData.name} - Contact us for more details!`); // Placeholder for real booking functionality
+        // Optional: Add actual booking logic (e.g., redirect to booking page, API call)
       });
     });
   }
