@@ -183,6 +183,55 @@ h1:hover {
   transform: translateX(2px);
 }
 
+.results-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  background-color: #f5f5f5;
+  padding: 10px;
+  border-radius: 8px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.results-header:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.sort-select, .show-map {
+  padding: 8px 12px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background-color: #fff;
+  cursor: pointer;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+}
+
+.sort-select:focus, .show-map:hover {
+  border-color: #0071C2;
+  box-shadow: 0 0 6px rgba(0, 113, 194, 0.3);
+}
+
+.show-map {
+  background-color: #1E7B5A;
+  color: #fff;
+  border: none;
+  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+}
+
+.show-map:hover {
+  background-color: #16634f;
+  transform: translateY(-1px);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
+}
+
 .filters-sidebar {
   width: 25%;
   background-color: #fff;
@@ -226,12 +275,28 @@ h1:hover {
 }
 
 .filters-sidebar .filter-group label:hover {
-  color: #2c5282;
+  color: #0071C2;
 }
 
 .filters-sidebar .filter-group input[type="checkbox"] {
   margin-right: 5px;
   cursor: pointer;
+}
+
+.filters-sidebar .filter-group select {
+  width: 100%;
+  padding: 8px;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+  font-size: 0.9rem;
+  background-color: #fff;
+  transition: border-color 0.3s ease, box-shadow 0.3s ease;
+  cursor: pointer;
+}
+
+.filters-sidebar .filter-group select:focus {
+  border-color: #0071C2;
+  box-shadow: 0 0 6px rgba(0, 113, 194, 0.3);
 }
 
 .results-grid {
@@ -334,6 +399,29 @@ h1:hover {
   75% { transform: translateX(-2px); }
 }
 
+.amenities {
+  color: #666;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+  display: flex;
+  gap: 5px;
+  flex-wrap: wrap;
+}
+
+.amenities .amenity {
+  background-color: #f5f5f5;
+  padding: 4px 8px;
+  border-radius: 3px;
+  transition: background-color 0.3s ease, color 0.3s ease;
+  cursor: pointer;
+}
+
+.amenities .amenity:hover {
+  background-color: #e2e8f0;
+  color: #0071C2;
+  animation: fadePulse 0.5s ease-in-out;
+}
+
 .rating {
   color: #666;
   font-size: 0.9rem;
@@ -414,36 +502,17 @@ h1:hover {
   to { opacity: 1; color: #0071C2; }
 }
 
-.description {
-  color: #555;
-  font-size: 1rem;
-  margin-bottom: 15px;
-  line-height: 1.4;
-  max-height: 4.2em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  transition: color 0.3s ease, max-height 0.3s ease;
+.room-type, .cancellation {
+  color: #4a5568;
+  font-size: 0.9rem;
+  margin-bottom: 5px;
+  transition: color 0.3s ease;
   cursor: pointer;
 }
 
-.description:hover {
-  max-height: none;
-  color: #333;
-  -webkit-line-clamp: unset;
-  overflow: visible;
-  animation: expandText 0.5s ease-out;
-  background-color: #f9f9f9;
-  padding: 5px;
-  border-radius: 4px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-}
-
-@keyframes expandText {
-  from { max-height: 4.2em; opacity: 0.9; transform: scale(1); }
-  to { max-height: none; opacity: 1; transform: scale(1.02); }
+.room-type:hover, .cancellation:hover {
+  color: #0071C2;
+  animation: fadePulse 0.5s ease-in-out;
 }
 
 .price {
@@ -525,7 +594,7 @@ h1:hover {
   font-size: 0.9rem;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-  margin-top: 10px;
+  margin-top: 5px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
@@ -549,7 +618,7 @@ h1:hover {
   font-size: 0.9rem;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-  margin-top: 10px;
+  margin-top: 5px;
   font-weight: 600;
   text-transform: uppercase;
   letter-spacing: 0.5px;
