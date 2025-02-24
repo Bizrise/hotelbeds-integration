@@ -81,10 +81,19 @@ form.addEventListener('submit', async (e) => {
         // Wait for 15 seconds before processing the response
         await new Promise(resolve => setTimeout(resolve, 15000)); // 15 seconds delay
 
-        const result = await response.json();
+        // Get the raw text response for debugging
+        const textResponse = await response.text();
+        console.log('Raw Webhook Response:', textResponse);
 
-        // Log the entire response for debugging
-        console.log('Webhook Response:', result);
+        // Try to parse as JSON, but handle non-JSON responses
+        let result;
+        try {
+            result = JSON.parse(textResponse);
+        } catch (jsonError) {
+            console.error('Invalid JSON response:', jsonError);
+            // If JSON parsing fails, treat the raw text as the result for display
+            result = { rawResponse: textResponse, error: 'Invalid JSON response received from webhook' };
+        }
 
         // Hide loading indicator and display results
         loadingIndicator.style.display = 'none';
@@ -106,6 +115,13 @@ function displayResults(result) {
     if (result.error) {
         resultsContainer.style.backgroundColor = '#ffebee'; // Light red for errors
         resultsContainer.innerHTML = `<p style="color: #d32f2f;">Error: ${result.error}</p>`;
+        if (result.rawResponse) {
+            resultsContainer.innerHTML += `
+                <pre style="margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px; overflow-x: auto; white-space: pre-wrap;">
+                    Raw Response: ${result.rawResponse}
+                </pre>
+            `;
+        }
     } else {
         resultsContainer.style.backgroundColor = '#e8f5e9'; // Light green for success
         resultsContainer.innerHTML = '<h3>Your Search Results:</h3>';
@@ -139,12 +155,14 @@ function displayResults(result) {
                 `;
             });
         } else {
-            // Provide more detailed feedback for debugging
+            // Display raw response or detailed message if no hotels are found
             resultsContainer.style.backgroundColor = '#fff3cd'; // Light yellow for warnings
             resultsContainer.innerHTML = `
                 <p style="color: #856404;">No hotels found or invalid response format. 
                 Check the console for the full response or verify the Make.com setup.</p>
-                <p>Response received: ${JSON.stringify(result)}</p>
+                <pre style="margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px; overflow-x: auto; white-space: pre-wrap;">
+                    ${JSON.stringify(result, null, 2) || 'No response data available.'}
+                </pre>
             `;
         }
     }
