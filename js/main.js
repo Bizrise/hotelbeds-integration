@@ -27,8 +27,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Show loading message with animation and start 30-second minimum timer
-    resultsSection.innerHTML = "<p class='loading'>Searching for hotels... <span class='loader'>Loading...</span></p>";
+    // Show loading message and start 30-second minimum timer
+    resultsSection.innerHTML = "<p>Waiting for hotel results... <span class='loading'>Loading...</span></p>";
     const startTime = Date.now();
     const minLoadingTime = 30000; // 30 seconds in milliseconds
 
@@ -61,7 +61,7 @@ document.addEventListener("DOMContentLoaded", () => {
         })
         .then(text => {
           const elapsedTime = Date.now() - startTime;
-          console.log("Loading started at:", new Date(startTime).toISOString(), "Elapsed time:", elapsedTime, "Response:", text); // Enhanced debug log
+          console.log("Elapsed time:", elapsedTime, "Response:", text); // Debug log
 
           // Check if response starts with "Accepted"
           if (text.trim().startsWith("Accepted")) {
@@ -136,68 +136,22 @@ document.addEventListener("DOMContentLoaded", () => {
         let maxRate = room.maxRate || "N/A";
         let currency = room.currency || "EUR";
         resultsSection.innerHTML += `
-          <div class="hotel-card" data-hotel="${encodeURIComponent(JSON.stringify(hotel))}">
+          <div class="hotel-card">
             <div class="hotel-image">
               <img src="${imageUrl}" alt="${hotel.name || "Unnamed Hotel"}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Error'">
             </div>
             <div class="hotel-details">
               <h3>${hotel.name || "Unnamed Hotel"}</h3>
-              <p class="rating">${hotel.category?.name || "N/A"} <span class="stars">★${"★".repeat(parseInt(hotel.category?.name?.charAt(0)) || 0)}</span></p>
+              <p class="rating">${hotel.category?.name || "N/A"} <span class="stars">${"★".repeat(parseInt(hotel.category?.name?.charAt(0)) || 0)}</span></p>
               <p class="location">${hotel.zoneName || "N/A"}, ${hotel.destinationName || "N/A"}</p>
               <p class="coordinates">Lat: ${hotel.latitude || "N/A"}, Long: ${hotel.longitude || "N/A"}</p>
               <p class="description">${hotel.description || "No description available."}</p>
-              <p class="price">Price Range: ${minRate} - ${maxRate} <span>${currency}</span></p>
+              <p class="price">Price Range: ${minRate} - ${maxRate} ${currency}</p>
               <button class="book-now">Book Now</button>
             </div>
           </div>`;
       });
     });
     resultsSection.innerHTML += `</div>`;
-
-    // Add interactivity to hotel cards
-    document.querySelectorAll('.hotel-card').forEach(card => {
-      card.addEventListener('mouseenter', () => {
-        card.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.2)';
-        card.style.transform = 'translateY(-8px)';
-        const details = card.querySelector('.hotel-details');
-        details.style.backgroundColor = '#f9f9f9';
-        details.style.padding = '18px';
-        card.querySelector('.hotel-image img').style.opacity = '0.85';
-      });
-      card.addEventListener('mouseleave', () => {
-        card.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
-        card.style.transform = 'translateY(-5px)';
-        const details = card.querySelector('.hotel-details');
-        details.style.backgroundColor = '#fff';
-        details.style.padding = '15px';
-        card.querySelector('.hotel-image img').style.opacity = '1';
-      });
-
-      // Add click to expand card details (optional interactivity)
-      card.addEventListener('click', (e) => {
-        if (!e.target.closest('.book-now')) {
-          const details = card.querySelector('.description');
-          if (details.style.maxHeight === 'none') {
-            details.style.maxHeight = '4.2em';
-            details.style.overflow = 'hidden';
-            details.style.webkitLineClamp = '3';
-          } else {
-            details.style.maxHeight = 'none';
-            details.style.overflow = 'visible';
-            details.style.webkitLineClamp = 'unset';
-          }
-        }
-      });
-    });
-
-    // Add click event for "Book Now" buttons (optional interactivity, customizable)
-    document.querySelectorAll('.book-now').forEach(button => {
-      button.addEventListener('click', (e) => {
-        const card = e.target.closest('.hotel-card');
-        const hotelData = JSON.parse(decodeURIComponent(card.dataset.hotel));
-        alert(`Booking ${hotelData.name} - Contact us for more details!`); // Placeholder, customizable for real booking
-        // Optional: Add actual booking logic (e.g., redirect, API call)
-      });
-    });
   }
 });
