@@ -11,7 +11,7 @@ document.addEventListener("DOMContentLoaded", () => {
     const checkout = document.getElementById("checkout").value;
     const travellers = document.getElementById("travellers").value;
 
-    // Validate destination code (3-letter code like "LON", "DXB", "TOKYO")
+    // Validate destination code (e.g., "LON", "DXB", "TOKYO")
     if (!/^[A-Z]{3,}$/.test(destinationInput)) {
       alert("Please enter a valid destination code or city (e.g., DXB, LON, TOKYO).");
       return;
@@ -27,20 +27,21 @@ document.addEventListener("DOMContentLoaded", () => {
       return;
     }
 
-    // Show loading message with animation and start 30-second minimum timer
-    resultsSection.innerHTML = "<p class='loading'>Searching for hotels... <span class='loader'>Loading...</span></p>";
-    const startTime = Date.now();
-    const minLoadingTime = 30000; // 30 seconds in milliseconds
+    // Show a polished loading message with animation
+    resultsSection.innerHTML = `<div class="loading-container">
+      <p class="loading-text">Searching for hotels...</p>
+      <div class="loader"></div>
+    </div>`;
 
     // Data object to send to Make.com webhook
     const requestData = { destination: destinationInput, checkin, checkout, travellers };
 
-    // Start polling for data (will try up to 12 times = 60 seconds total)
-    sendRequestAndPoll(requestData, startTime, minLoadingTime);
+    // Start polling for data (up to 12 attempts = 60 seconds total)
+    sendRequestAndPoll(requestData, Date.now(), 30000);
   });
 
   function sendRequestAndPoll(requestData, startTime, minLoadingTime) {
-    const maxRetries = 12; // 12 attempts = 60 seconds total (5 sec each)
+    const maxRetries = 12;
     let attempt = 0;
 
     function fetchData() {
@@ -48,115 +49,88 @@ document.addEventListener("DOMContentLoaded", () => {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Accept": "application/json" // Ensure JSON response
+          "Accept": "application/json"
         },
-        mode: "cors", // Explicitly set CORS mode
-        credentials: "omit" // Adjust if needed for cookies or authentication
+        mode: "cors",
+        body: JSON.stringify(requestData)
       })
-        .then(response => {
-          if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status} - ${response.statusText}`);
-          }
-          return response.text(); // Read response as plain text
-        })
-        .then(text => {
-          const elapsedTime = Date.now() - startTime;
-          console.log("Loading started at:", new Date(startTime).toISOString(), "Elapsed time:", elapsedTime, "Raw Response:", text); // Enhanced debug log
+      .then(response => response.text())
+      .then(text => {
+        const elapsedTime = Date.now() - startTime;
+        console.log("Raw response:", text, "Elapsed:", elapsedTime);
 
-          // Check if response starts with "Accepted"
-          if (text.trim().startsWith("Accepted")) {
-            if (attempt < maxRetries) {
-              attempt++;
-              console.log(`Attempt ${attempt}: Response is "Accepted". Retrying in 5 seconds...`);
-              setTimeout(fetchData, 5000);
-            } else {
-              setTimeout(() => {
-                console.log("Showing error after 30 seconds (no data after max retries)");
-                resultsSection.innerHTML = "<p>No hotels found after multiple attempts.</p>";
-              }, Math.max(0, minLoadingTime - elapsedTime));
-            }
-            return;
-          }
-
-          // Otherwise, try to parse the JSON
-          try {
-            const data = JSON.parse(text);
-            console.log("Parsed Data:", data); // Log parsed data for debugging
-            const hotels = data?.hotels || (Array.isArray(data) ? data : []); // Handle both nested and direct arrays
-            if (hotels.length > 0) {
-              setTimeout(() => {
-                console.log("Showing hotels after 30 seconds, Hotels:", hotels);
-                displayHotels(hotels);
-              }, Math.max(0, minLoadingTime - elapsedTime));
-            } else if (attempt < maxRetries) {
-              attempt++;
-              console.log(`Attempt ${attempt}: No hotels yet. Retrying in 5 seconds...`);
-              setTimeout(fetchData, 5000);
-            } else {
-              setTimeout(() => {
-                console.log("Showing error after 30 seconds (no hotels after max retries)");
-                resultsSection.innerHTML = "<p>No hotels found for your criteria after multiple attempts.</p>";
-              }, Math.max(0, minLoadingTime - elapsedTime));
-            }
-          } catch (error) {
-            console.error("Data parsing error:", error, "Response text:", text);
+        if (text.trim().startsWith("Accepted")) {
+          if (attempt < maxRetries) {
+            attempt++;
+            console.log(`Attempt ${attempt}: Received "Accepted". Retrying in 5 seconds...`);
+            setTimeout(fetchData, 5000);
+          } else {
             setTimeout(() => {
-              console.log("Showing error after 30 seconds (parsing failed)");
-              resultsSection.innerHTML = "<p>Unable to process hotel data. Please try again later.</p>";
+              resultsSection.innerHTML = "<p class='error'>No hotels found after multiple attempts.</p>";
             }, Math.max(0, minLoadingTime - elapsedTime));
           }
-        })
-        .catch(error => {
-          console.error("Fetch error:", error);
-          const elapsedTime = Date.now() - startTime;
-          setTimeout(() => {
-            console.log("Showing error after 30 seconds (fetch failed)");
-            resultsSection.innerHTML = `<p>Error fetching hotels: ${error.message}</p>`;
-          }, Math.max(0, minLoadingTime - elapsedTime));
-        });
-    }
+          return;
+        }
 
-    fetchData(); // Start polling
+        try {
+          const data = JSON.parse(text);
+          const hotels = data?.hotels || (Array.isArray(data) ? data : []);
+          if (hotels.length > 0) {
+            setTimeout(() => {
+              displayHotels(hotels);
+            }, Math.max(0, minLoadingTime - elapsedTime));
+          } else if (attempt < maxRetries) {
+            attempt++;
+            console.log(`Attempt ${attempt}: No hotels yet. Retrying in 5 seconds...`);
+            setTimeout(fetchData, 5000);
+          } else {
+            setTimeout(() => {
+              resultsSection.innerHTML = "<p class='error'>No hotels found for your criteria after multiple attempts.</p>";
+            }, Math.max(0, minLoadingTime - elapsedTime));
+          }
+        } catch (error) {
+          console.error("Data parsing error:", error, "Response:", text);
+          setTimeout(() => {
+            resultsSection.innerHTML = "<p class='error'>Unable to process hotel data. Please try again later.</p>";
+          }, Math.max(0, minLoadingTime - elapsedTime));
+        }
+      })
+      .catch(error => {
+        console.error("Fetch error:", error);
+        const elapsedTime = Date.now() - startTime;
+        setTimeout(() => {
+          resultsSection.innerHTML = `<p class='error'>Error fetching hotels: ${error.message}</p>`;
+        }, Math.max(0, minLoadingTime - elapsedTime));
+      });
+    }
+    fetchData();
   }
 
   function displayHotels(hotels) {
     resultsSection.innerHTML = "<h2>Hotel Search Results</h2>";
-
     if (!hotels || hotels.length === 0) {
-      resultsSection.innerHTML += "<p>No hotels found for your criteria.</p>";
+      resultsSection.innerHTML += "<p class='error'>No hotels found for your criteria.</p>";
       return;
     }
-
     resultsSection.innerHTML += `<div class="results-grid">`;
     hotels.forEach(hotel => {
-      const imageUrl = hotel.images && hotel.images[0]?.url ? hotel.images[0].url : "https://via.placeholder.com/300x200?text=No+Image";
-      let hotelRooms = hotel.rooms || hotel.rates || []; // Handle both 'rooms' and 'rates' from Hotelbeds
-      hotelRooms = Array.isArray(hotelRooms) ? hotelRooms : [hotelRooms]; // Ensure it's an array
+      const imageUrl = (hotel.images && hotel.images[0]?.url) ? hotel.images[0].url : "https://via.placeholder.com/300x200?text=No+Image";
+      let hotelRooms = hotel.rooms || hotel.rates || [];
+      hotelRooms = Array.isArray(hotelRooms) ? hotelRooms : [hotelRooms];
       hotelRooms.forEach(room => {
         let minRate = room.minRate || "N/A";
         let maxRate = room.maxRate || "N/A";
-        let currency = room.currency || "EUR"; // Default to EUR, adjust as needed for Booking.com style
-        let freeCancellation = room.freeCancellation ? `Free cancellation until ${new Date().toISOString().split('T')[0]}` : null;
-
+        let currency = room.currency || "EUR";
         resultsSection.innerHTML += `
-          <div class="hotel-card" data-hotel="${encodeURIComponent(JSON.stringify(hotel))}">
+          <div class="hotel-card" data-hotel='${encodeURIComponent(JSON.stringify(hotel))}'>
             <div class="hotel-image">
-              <img src="${imageUrl}" alt="${hotel.name || "Unnamed Hotel"}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Error'">
+              <img src="${imageUrl}" alt="${hotel.name || "Unnamed Hotel"}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x200?text=No+Image'">
             </div>
             <div class="hotel-details">
               <h3>${hotel.name || "Unnamed Hotel"}</h3>
-              <div class="amenities">
-                <span class="amenity">Parking</span>
-                <span class="amenity">AC</span>
-                <span class="amenity">Wi-Fi</span>
-                <span class="amenity">Gym</span>
-              </div>
-              <p class="rating">${hotel.category?.name || "N/A"} <span class="stars">★${"★".repeat(parseInt(hotel.category?.name?.charAt(0)) || 0)}</span></p>
+              <p class="rating">${hotel.categoryName || "N/A"} <span class="stars">★${"★".repeat(parseInt(hotel.categoryName) || 0)}</span></p>
               <p class="location">${hotel.zoneName || "N/A"}, ${hotel.destinationName || "N/A"}</p>
-              <p class="coordinates">Lat: ${hotel.latitude || "N/A"}, Long: ${hotel.longitude || "N/A"}</p>
-              <p class="description">${hotel.description || "No description available."}</p>
-              <p class="price">Price: ${minRate} <span>${currency}</span></p>
-              ${freeCancellation ? `<p class="cancellation">${freeCancellation}</p>` : ''}
+              <p class="price">Price Range: ${minRate} - ${maxRate} ${currency}</p>
               <button class="book-now">Book Now</button>
             </div>
           </div>`;
@@ -164,49 +138,33 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     resultsSection.innerHTML += `</div>`;
 
-    // Add interactivity to hotel cards
+    // Interactivity similar to Booking.com
     document.querySelectorAll('.hotel-card').forEach(card => {
       card.addEventListener('mouseenter', () => {
         card.style.boxShadow = '0 8px 20px rgba(0, 0, 0, 0.2)';
         card.style.transform = 'translateY(-5px)';
-        const details = card.querySelector('.hotel-details');
-        details.style.backgroundColor = '#f9f9f9';
-        details.style.padding = '16px';
-        card.querySelector('.hotel-image img').style.opacity = '0.85';
       });
       card.addEventListener('mouseleave', () => {
         card.style.boxShadow = '0 4px 12px rgba(0, 0, 0, 0.1)';
         card.style.transform = 'translateY(0)';
-        const details = card.querySelector('.hotel-details');
-        details.style.backgroundColor = '#fff';
-        details.style.padding = '15px';
-        card.querySelector('.hotel-image img').style.opacity = '1';
       });
-
-      // Add click to expand card details (optional interactivity)
-      card.addEventListener('click', (e) => {
-        if (!e.target.closest('.book-now')) {
-          const details = card.querySelector('.description');
-          if (details) {
-            if (details.style.maxHeight === 'none') {
-              details.style.maxHeight = '4.2em';
-              details.style.overflow = 'hidden';
-              details.style.webkitLineClamp = '3';
-            } else {
-              details.style.maxHeight = 'none';
-              details.style.overflow = 'visible';
-              details.style.webkitLineClamp = 'unset';
-            }
-          }
-        }
-      });
-
-      // Add click event for "Book Now" button
       card.querySelector('.book-now').addEventListener('click', (e) => {
+        e.stopPropagation();
         const hotelData = JSON.parse(decodeURIComponent(card.dataset.hotel));
-        alert(`Booking ${hotelData.name} - Contact us for more details!`); // Placeholder for real booking functionality
-        // Optional: Add actual booking logic (e.g., redirect to booking page, API call)
+        // Replace this with your actual booking process, e.g., redirect to a booking page
+        alert(`Booking ${hotelData.name} - please contact us for details!`);
       });
     });
   }
 });
+
+// Dynamically add refined CSS for a Booking.com–like design
+const styles = `
+  body { font-family: "Open Sans", sans-serif; margin: 0; padding: 0; background: #f5f5f5; color: #333; }
+  h2 { text-align: center; margin: 20px 0; }
+  .loading-container { text-align: center; padding: 40px; }
+  .loading-text { font-size: 18px; margin-bottom: 20px; }
+  .loader { border: 8px solid #f3f3f3; border-top: 8px solid #3498db; border-radius: 50%; width: 60px; height: 60px; margin: 0 auto; animation: spin 2s linear infinite; }\n  @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }\n  .results-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px; padding: 20px; }\n  .hotel-card { background: #fff; border: 1px solid #ddd; border-radius: 5px; box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1); overflow: hidden; transition: transform 0.3s, box-shadow 0.3s; }\n  .hotel-image { width: 100%; height: 200px; overflow: hidden; }\n  .hotel-image img { width: 100%; height: 100%; object-fit: cover; transition: opacity 0.3s; }\n  .hotel-details { padding: 15px; }\n  .hotel-details h3 { margin: 0 0 8px; font-size: 18px; color: #333; }\n  .hotel-details .rating { font-size: 14px; color: #ff9900; margin-bottom: 6px; }\n  .hotel-details .location { font-size: 14px; color: #777; margin-bottom: 6px; }\n  .hotel-details .price { font-size: 16px; font-weight: bold; margin-bottom: 10px; }\n  .hotel-details .book-now { background: #0071c2; color: #fff; border: none; padding: 10px 20px; border-radius: 3px; cursor: pointer; font-size: 14px; transition: background 0.3s; }\n  .hotel-details .book-now:hover { background: #005b9f; }\n  .error { color: red; text-align: center; margin: 20px 0; }\n`;
+const styleSheet = document.createElement("style");
+styleSheet.textContent = styles;
+document.head.appendChild(styleSheet);
