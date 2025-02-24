@@ -142,7 +142,7 @@ document.addEventListener("DOMContentLoaded", () => {
             </div>
             <div class="hotel-details">
               <h3>${hotel.name || "Unnamed Hotel"}</h3>
-              <p class="rating">${hotel.category?.name || "N/A"} <span class="stars">${"★".repeat(parseInt(hotel.category?.name?.charAt(0)) || 0)}</span></p>
+              <p class="rating">${hotel.category?.name || "N/A"} <span class="stars">★${"★".repeat(parseInt(hotel.category?.name?.charAt(0)) || 0)}</span></p>
               <p class="location">${hotel.zoneName || "N/A"}, ${hotel.destinationName || "N/A"}</p>
               <p class="coordinates">Lat: ${hotel.latitude || "N/A"}, Long: ${hotel.longitude || "N/A"}</p>
               <p class="description">${hotel.description || "No description available."}</p>
