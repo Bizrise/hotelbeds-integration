@@ -1,146 +1,157 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hotel Booking</title>
-  <style>
-    body {
-      font-family: Arial, sans-serif;
-      margin: 0;
-      padding: 0;
-      background: #f4f4f4;
+document.addEventListener("DOMContentLoaded", () => {
+  const form = document.getElementById("hotelSearchForm");
+  const resultsSection = document.getElementById("results");
+
+  form.addEventListener("submit", function (event) {
+    event.preventDefault();
+
+    // Get input values
+    const destinationInput = document.getElementById("destination").value.trim().toUpperCase();
+    const checkin = document.getElementById("checkin").value;
+    const checkout = document.getElementById("checkout").value;
+    const travellers = document.getElementById("travellers").value;
+
+    // Validate destination code (3-letter code like "LON", "DXB")
+    if (!/^[A-Z]{3}$/.test(destinationInput)) {
+      alert("Please enter a valid three-letter airport code (e.g., DXB, LON, PAR).");
+      return;
     }
-    .container {
-      max-width: 1200px;
-      margin: 20px auto;
-      padding: 0 20px;
+
+    // Validate check-in & check-out dates
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    const checkinDate = new Date(checkin);
+    const checkoutDate = new Date(checkout);
+    if (isNaN(checkinDate) || isNaN(checkoutDate) || checkoutDate <= checkinDate || checkinDate < today) {
+      alert("Please enter valid dates, with check-out after check-in and check-in in the future.");
+      return;
     }
-    h1 {
-      text-align: center;
-      color: #003580;
-      margin-bottom: 20px;
+
+    // Show loading message and start 30-second minimum timer
+    resultsSection.innerHTML = "<p>Waiting for hotel results... <span class='loading'>Loading...</span></p>";
+    const startTime = Date.now();
+    const minLoadingTime = 30000; // 30 seconds in milliseconds
+
+    // Data object to send to Make.com webhook
+    const requestData = { destination: destinationInput, checkin, checkout, travellers };
+
+    // Start polling for data (will try up to 12 times = 60 seconds total)
+    sendRequestAndPoll(requestData, startTime, minLoadingTime);
+  });
+
+  function sendRequestAndPoll(requestData, startTime, minLoadingTime) {
+    const maxRetries = 12; // 12 attempts = 60 seconds total (5 sec each)
+    let attempt = 0;
+
+    function fetchData() {
+      fetch("https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", {
+        method: "POST",
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json" // Added to ensure JSON response
+        },
+        mode: "cors", // Explicitly set CORS mode
+        credentials: "omit" // Adjust if needed for cookies or authentication
+      })
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.text(); // Read response as plain text
+        })
+        .then(text => {
+          const elapsedTime = Date.now() - startTime;
+          console.log("Elapsed time:", elapsedTime, "Response:", text); // Debug log
+
+          // Check if response starts with "Accepted"
+          if (text.trim().startsWith("Accepted")) {
+            if (attempt < maxRetries) {
+              attempt++;
+              console.log(`Attempt ${attempt}: Response is "Accepted". Retrying in 5 seconds...`);
+              setTimeout(fetchData, 5000);
+            } else {
+              setTimeout(() => {
+                console.log("Showing error after 30 seconds (no data after max retries)");
+                resultsSection.innerHTML = "<p>No hotels found after multiple attempts.</p>";
+              }, Math.max(0, minLoadingTime - elapsedTime));
+            }
+            return;
+          }
+
+          // Otherwise, try to parse the JSON
+          try {
+            const data = JSON.parse(text);
+            const hotels = data?.hotels || (Array.isArray(data) ? data : []); // Handle both nested and direct arrays
+            if (hotels.length > 0) {
+              setTimeout(() => {
+                console.log("Showing hotels after 30 seconds");
+                displayHotels(hotels);
+              }, Math.max(0, minLoadingTime - elapsedTime));
+            } else if (attempt < maxRetries) {
+              attempt++;
+              console.log(`Attempt ${attempt}: No hotels yet. Retrying in 5 seconds...`);
+              setTimeout(fetchData, 5000);
+            } else {
+              setTimeout(() => {
+                console.log("Showing error after 30 seconds (no hotels after max retries)");
+                resultsSection.innerHTML = "<p>No hotels found for your criteria after multiple attempts.</p>";
+              }, Math.max(0, minLoadingTime - elapsedTime));
+            }
+          } catch (error) {
+            console.error("Data parsing error:", error, "Response text:", text);
+            setTimeout(() => {
+              console.log("Showing error after 30 seconds (parsing failed)");
+              resultsSection.innerHTML = "<p>Unable to process hotel data. Please try again later.</p>";
+            }, Math.max(0, minLoadingTime - elapsedTime));
+          }
+        })
+        .catch(error => {
+          console.error("Fetch error:", error);
+          const elapsedTime = Date.now() - startTime;
+          setTimeout(() => {
+            console.log("Showing error after 30 seconds (fetch failed)");
+            resultsSection.innerHTML = `<p>Error fetching hotels: ${error.message}</p>`;
+          }, Math.max(0, minLoadingTime - elapsedTime));
+        });
     }
-    #hotelSearchForm {
-      display: flex;
-      gap: 10px;
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-      margin-bottom: 30px;
+
+    fetchData(); // Start polling
+  }
+
+  function displayHotels(hotels) {
+    resultsSection.innerHTML = "<h2>Hotel Search Results</h2>";
+
+    if (!hotels || hotels.length === 0) {
+      resultsSection.innerHTML += "<p>No hotels found for your criteria.</p>";
+      return;
     }
-    #hotelSearchForm input {
-      padding: 10px;
-      border: 1px solid #ddd;
-      border-radius: 4px;
-      font-size: 14px;
-      flex: 1;
-    }
-    #hotelSearchForm button {
-      padding: 10px 20px;
-      background: #0071c2;
-      color: #fff;
-      border: none;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    #hotelSearchForm button:hover {
-      background: #005ea6;
-    }
-    .loading {
-      font-style: italic;
-      color: #666;
-      animation: pulse 1.5s infinite;
-    }
-    @keyframes pulse { 0% { opacity: 1; } 50% { opacity: 0.5; } 100% { opacity: 1; } }
-    .results-grid {
-      display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(350px, 1fr));
-      gap: 20px;
-      padding: 20px;
-    }
-    .hotel-card {
-      display: flex;
-      border: 1px solid #ddd;
-      border-radius: 8px;
-      overflow: hidden;
-      box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
-      background: #fff;
-    }
-    .hotel-image {
-      flex: 0 0 40%;
-    }
-    .hotel-image img {
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-    }
-    .hotel-details {
-      flex: 1;
-      padding: 15px;
-    }
-    .hotel-details h3 {
-      margin: 0 0 10px;
-      font-size: 18px;
-      color: #003580;
-    }
-    .rating {
-      margin: 0 0 5px;
-      font-size: 14px;
-      color: #666;
-    }
-    .stars {
-      color: #feba02;
-    }
-    .location {
-      margin: 0 0 5px;
-      font-size: 14px;
-      color: #0071c2;
-    }
-    .coordinates {
-      margin: 0 0 5px;
-      font-size: 12px;
-      color: #999;
-    }
-    .description {
-      margin: 0 0 10px;
-      font-size: 14px;
-      color: #333;
-    }
-    .price {
-      margin: 0 0 10px;
-      font-size: 16px;
-      font-weight: bold;
-      color: #008009;
-    }
-    .book-now {
-      background: #0071c2;
-      color: #fff;
-      border: none;
-      padding: 10px 20px;
-      border-radius: 4px;
-      cursor: pointer;
-      font-size: 14px;
-    }
-    .book-now:hover {
-      background: #005ea6;
-    }
-  </style>
-</head>
-<body>
-  <div class="container">
-    <h1>Find Your Hotel</h1>
-    <form id="hotelSearchForm">
-      <input type="text" id="destination" placeholder="Destination (e.g., LON)" required>
-      <input type="date" id="checkin" required>
-      <input type="date" id="checkout" required>
-      <input type="number" id="travellers" placeholder="Travellers" min="1" required>
-      <button type="submit">Search Hotels</button>
-    </form>
-    <section id="results"></section>
-  </div>
-  <script src="/main.js"></script> <!-- Updated to use root path with leading slash, ensuring no 404 -->
-</body>
-</html>
+
+    resultsSection.innerHTML += `<div class="results-grid">`;
+    hotels.forEach(hotel => {
+      const imageUrl = hotel.images && hotel.images[0]?.url ? hotel.images[0].url : "https://via.placeholder.com/300x200?text=No+Image";
+      let hotelRooms = hotel.rooms || hotel.rates || []; // Handle both 'rooms' and 'rates' from Hotelbeds
+      hotelRooms = Array.isArray(hotelRooms) ? hotelRooms : [hotelRooms]; // Ensure it's an array
+      hotelRooms.forEach(room => {
+        let minRate = room.minRate || "N/A";
+        let maxRate = room.maxRate || "N/A";
+        let currency = room.currency || "EUR";
+        resultsSection.innerHTML += `
+          <div class="hotel-card">
+            <div class="hotel-image">
+              <img src="${imageUrl}" alt="${hotel.name || "Unnamed Hotel"}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Error'">
+            </div>
+            <div class="hotel-details">
+              <h3>${hotel.name || "Unnamed Hotel"}</h3>
+              <p class="rating">${hotel.category?.name || "N/A"} <span class="stars">${"★".repeat(parseInt(hotel.category?.name?.charAt(0)) || 0)}</span></p>
+              <p class="location">${hotel.zoneName || "N/A"}, ${hotel.destinationName || "N/A"}</p>
+              <p class="coordinates">Lat: ${hotel.latitude || "N/A"}, Long: ${hotel.longitude || "N/A"}</p>
+              <p class="description">${hotel.description || "No description available."}</p>
+              <p class="price">Price Range: ${minRate} - ${maxRate} ${currency}</p>
+              <button class="book-now">Book Now</button>
+            </div>
+          </div>`;
+      });
+    });
+    resultsSection.innerHTML += `</div>`;
+  }
+});
