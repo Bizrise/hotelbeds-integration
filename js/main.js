@@ -17,6 +17,18 @@ document.addEventListener('DOMContentLoaded', () => {
     resultsContainer.style.backgroundColor = '#f8f9fa';
     resultsContainer.style.display = 'none'; // Hidden by default
     document.querySelector('.booking-card').appendChild(resultsContainer);
+
+    // Add loading indicator
+    const loadingIndicator = document.createElement('div');
+    loadingIndicator.id = 'loadingIndicator';
+    loadingIndicator.style.display = 'none';
+    loadingIndicator.style.marginTop = '20px';
+    loadingIndicator.style.padding = '15px';
+    loadingIndicator.style.borderRadius = '6px';
+    loadingIndicator.style.backgroundColor = '#f5f5f5';
+    loadingIndicator.style.textAlign = 'center';
+    loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait (35 seconds).</p>';
+    document.querySelector('.booking-card').appendChild(loadingIndicator);
 });
 
 // Webhook URL for backend integration
@@ -47,8 +59,13 @@ form.addEventListener('submit', async (e) => {
         travellers: parseInt(travellers) // Convert to integer for consistency
     };
 
+    // Show loading indicator
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    loadingIndicator.style.display = 'block';
+    document.getElementById('resultsContainer').style.display = 'none';
+
     try {
-        // Send POST request to the webhook
+        // Send POST request to the webhook immediately, but delay showing results
         const response = await fetch(WEBHOOK_URL, {
             method: 'POST',
             headers: {
@@ -61,13 +78,20 @@ form.addEventListener('submit', async (e) => {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
+        // Wait for 35 seconds before processing the response
+        await new Promise(resolve => setTimeout(resolve, 35000)); // 35 seconds delay
+
         const result = await response.json();
 
-        // Display the results on the webpage
+        // Hide loading indicator and display results
+        loadingIndicator.style.display = 'none';
         displayResults(result);
 
     } catch (error) {
         console.error('Error sending data to webhook:', error);
+        // Hide loading indicator and show error after delay
+        await new Promise(resolve => setTimeout(resolve, 35000)); // 35 seconds delay
+        loadingIndicator.style.display = 'none';
         displayResults({ error: 'There was an error processing your request. Please try again.' });
     }
 });
