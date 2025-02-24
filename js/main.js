@@ -146,7 +146,7 @@ document.addEventListener("DOMContentLoaded", () => {
               <p class="location">${hotel.zoneName || "N/A"}, ${hotel.destinationName || "N/A"}</p>
               <p class="coordinates">Lat: ${hotel.latitude || "N/A"}, Long: ${hotel.longitude || "N/A"}</p>
               <p class="description">${hotel.description || "No description available."}</p>
-              <p class="price">Price Range: ${minRate} - ${maxRate} ${currency}</p>
+              <p class="price">Price Range: ${minRate} - ${maxRate} <span>${currency}</span></p>
               <button class="book-now">Book Now</button>
             </div>
           </div>`;
