@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadingIndicator.style.borderRadius = '6px';
     loadingIndicator.style.backgroundColor = '#f5f5f5';
     loadingIndicator.style.textAlign = 'center';
-    loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait (35 seconds).</p>';
+    loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait (15 seconds).</p>';
     document.querySelector('.booking-card').appendChild(loadingIndicator);
 });
 
@@ -78,10 +78,13 @@ form.addEventListener('submit', async (e) => {
             throw new Error(`HTTP error! status: ${response.status}`);
         }
 
-        // Wait for 35 seconds before processing the response
-        await new Promise(resolve => setTimeout(resolve, 35000)); // 35 seconds delay
+        // Wait for 15 seconds before processing the response
+        await new Promise(resolve => setTimeout(resolve, 15000)); // 15 seconds delay
 
         const result = await response.json();
+
+        // Log the entire response for debugging
+        console.log('Webhook Response:', result);
 
         // Hide loading indicator and display results
         loadingIndicator.style.display = 'none';
@@ -90,7 +93,7 @@ form.addEventListener('submit', async (e) => {
     } catch (error) {
         console.error('Error sending data to webhook:', error);
         // Hide loading indicator and show error after delay
-        await new Promise(resolve => setTimeout(resolve, 35000)); // 35 seconds delay
+        await new Promise(resolve => setTimeout(resolve, 15000)); // 15 seconds delay
         loadingIndicator.style.display = 'none';
         displayResults({ error: 'There was an error processing your request. Please try again.' });
     }
@@ -108,7 +111,7 @@ function displayResults(result) {
         resultsContainer.innerHTML = '<h3>Your Search Results:</h3>';
 
         // Check if the result has hotels
-        if (result.hotels && Array.isArray(result.hotels)) {
+        if (result.hotels && Array.isArray(result.hotels) && result.hotels.length > 0) {
             result.hotels.forEach((hotel, index) => {
                 // Extract hotel details from the response
                 const hotelName = hotel.name || 'Unknown Hotel';
@@ -136,7 +139,13 @@ function displayResults(result) {
                 `;
             });
         } else {
-            resultsContainer.innerHTML += `<p>No hotels found or invalid response format.</p>`;
+            // Provide more detailed feedback for debugging
+            resultsContainer.style.backgroundColor = '#fff3cd'; // Light yellow for warnings
+            resultsContainer.innerHTML = `
+                <p style="color: #856404;">No hotels found or invalid response format. 
+                Check the console for the full response or verify the Make.com setup.</p>
+                <p>Response received: ${JSON.stringify(result)}</p>
+            `;
         }
     }
 
