@@ -46,12 +46,22 @@ document.addEventListener("DOMContentLoaded", () => {
     function fetchData() {
       fetch("https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestData)
+        headers: { 
+          "Content-Type": "application/json",
+          "Accept": "application/json" // Ensure JSON response
+        },
+        mode: "cors", // Explicitly set CORS mode
+        credentials: "omit" // Adjust if needed for cookies or authentication
       })
-        .then(response => response.text()) // Read response as plain text
+        .then(response => {
+          if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+          }
+          return response.text(); // Read response as plain text
+        })
         .then(text => {
           const elapsedTime = Date.now() - startTime;
+          console.log("Elapsed time:", elapsedTime, "Response:", text); // Debug log
 
           // Check if response starts with "Accepted"
           if (text.trim().startsWith("Accepted")) {
@@ -60,8 +70,8 @@ document.addEventListener("DOMContentLoaded", () => {
               console.log(`Attempt ${attempt}: Response is "Accepted". Retrying in 5 seconds...`);
               setTimeout(fetchData, 5000);
             } else {
-              // Ensure minimum 30 seconds before showing error
               setTimeout(() => {
+                console.log("Showing error after 30 seconds (no data after max retries)");
                 resultsSection.innerHTML = "<p>No hotels found after multiple attempts.</p>";
               }, Math.max(0, minLoadingTime - elapsedTime));
             }
@@ -71,10 +81,10 @@ document.addEventListener("DOMContentLoaded", () => {
           // Otherwise, try to parse the JSON
           try {
             const data = JSON.parse(text);
-            const hotels = data?.hotels || []; // Handle if data is directly an array or nested under 'hotels'
+            const hotels = data?.hotels || (Array.isArray(data) ? data : []); // Handle both nested and direct arrays
             if (hotels.length > 0) {
-              // Ensure minimum 30 seconds before showing results
               setTimeout(() => {
+                console.log("Showing hotels after 30 seconds");
                 displayHotels(hotels);
               }, Math.max(0, minLoadingTime - elapsedTime));
             } else if (attempt < maxRetries) {
@@ -82,24 +92,24 @@ document.addEventListener("DOMContentLoaded", () => {
               console.log(`Attempt ${attempt}: No hotels yet. Retrying in 5 seconds...`);
               setTimeout(fetchData, 5000);
             } else {
-              // Ensure minimum 30 seconds before showing error
               setTimeout(() => {
+                console.log("Showing error after 30 seconds (no hotels after max retries)");
                 resultsSection.innerHTML = "<p>No hotels found for your criteria after multiple attempts.</p>";
               }, Math.max(0, minLoadingTime - elapsedTime));
             }
           } catch (error) {
-            console.error("Data parsing error:", error);
-            // Ensure minimum 30 seconds before showing error
+            console.error("Data parsing error:", error, "Response text:", text);
             setTimeout(() => {
+              console.log("Showing error after 30 seconds (parsing failed)");
               resultsSection.innerHTML = "<p>Unable to process hotel data. Please try again later.</p>";
             }, Math.max(0, minLoadingTime - elapsedTime));
           }
         })
         .catch(error => {
           console.error("Fetch error:", error);
-          // Ensure minimum 30 seconds before showing error
           const elapsedTime = Date.now() - startTime;
           setTimeout(() => {
+            console.log("Showing error after 30 seconds (fetch failed)");
             resultsSection.innerHTML = `<p>Error fetching hotels: ${error.message}</p>`;
           }, Math.max(0, minLoadingTime - elapsedTime));
         });
@@ -128,7 +138,7 @@ document.addEventListener("DOMContentLoaded", () => {
         resultsSection.innerHTML += `
           <div class="hotel-card">
             <div class="hotel-image">
-              <img src="${imageUrl}" alt="${hotel.name || "Unnamed Hotel"}">
+              <img src="${imageUrl}" alt="${hotel.name || "Unnamed Hotel"}" loading="lazy" onerror="this.src='https://via.placeholder.com/300x200?text=Image+Error'">
             </div>
             <div class="hotel-details">
               <h3>${hotel.name || "Unnamed Hotel"}</h3>
