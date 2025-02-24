@@ -48,10 +48,10 @@ document.addEventListener("DOMContentLoaded", () => {
         method: "POST",
         headers: { 
           "Content-Type": "application/json",
-          "Accept": "application/json" // Ensure JSON response
+          "Accept": "application/json"
         },
-        mode: "cors", // Explicitly set CORS mode
-        credentials: "omit" // Adjust if needed for cookies or authentication
+        mode: "cors",
+        credentials: "omit"
       })
         .then(response => {
           if (!response.ok) {
