@@ -12,23 +12,26 @@ body {
   color: #333;
   line-height: 1.6;
   font-size: 14px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  min-height: 100vh;
+  padding: 20px;
+  background-image: linear-gradient(to bottom, #f5f6f7, #fff);
 }
 
 .container {
   max-width: 1200px;
-  margin: 0 auto;
-  padding: 20px;
-  display: flex;
-  gap: 20px;
+  width: 100%;
   transition: padding 0.3s ease;
 }
 
 header {
   text-align: center;
-  padding: 20px 0;
-  background-color: #0071C2;
+  padding: 30px 0;
+  background-color: #003580;
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  border-radius: 8px 8px 0 0;
+  border-radius: 10px 10px 0 0;
   margin-bottom: 20px;
   transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
@@ -40,26 +43,28 @@ header:hover {
 
 h1 {
   color: #fff;
-  font-size: 2.2rem;
+  font-size: 2.5rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 1px;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   transition: color 0.3s ease;
 }
 
 h1:hover {
-  color: #005ea6;
+  color: #00264d;
 }
 
 #hotelSearchForm {
   background-color: #fff;
-  padding: 15px;
-  border-radius: 8px;
+  padding: 30px;
+  border-radius: 10px;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  margin-bottom: 20px;
+  margin: 0 auto;
+  max-width: 600px;
   display: flex;
-  gap: 10px;
   flex-wrap: wrap;
+  gap: 15px;
   align-items: center;
   transition: box-shadow 0.3s ease, transform 0.3s ease;
   cursor: pointer;
@@ -77,35 +82,35 @@ h1:hover {
 }
 
 #hotelSearchForm input {
-  padding: 10px;
+  padding: 12px;
   border: 1px solid #ddd;
   border-radius: 4px;
   font-size: 1rem;
   flex: 1;
   min-width: 150px;
   transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
-  background-color: #f5f5f5;
+  background-color: #f9f9f9;
   box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) inset;
 }
 
 #hotelSearchForm input:focus {
-  border-color: #0071C2;
+  border-color: #003580;
   outline: none;
-  box-shadow: 0 0 6px rgba(0, 113, 194, 0.3), 0 1px 3px rgba(0, 0, 0, 0.05) inset;
+  box-shadow: 0 0 6px rgba(0, 53, 128, 0.3), 0 1px 3px rgba(0, 0, 0, 0.05) inset;
   background-color: #fff;
   transform: scale(1.02);
   animation: pulseInput 0.5s ease-out;
 }
 
 @keyframes pulseInput {
-  0% { transform: scale(1); box-shadow: 0 0 6px rgba(0, 113, 194, 0.3); }
-  50% { transform: scale(1.03); box-shadow: 0 0 8px rgba(0, 113, 194, 0.4); }
-  100% { transform: scale(1.02); box-shadow: 0 0 6px rgba(0, 113, 194, 0.3); }
+  0% { transform: scale(1); box-shadow: 0 0 6px rgba(0, 53, 128, 0.3); }
+  50% { transform: scale(1.03); box-shadow: 0 0 8px rgba(0, 53, 128, 0.4); }
+  100% { transform: scale(1.02); box-shadow: 0 0 6px rgba(0, 53, 128, 0.3); }
 }
 
 #hotelSearchForm button {
-  padding: 12px 20px;
-  background-color: #1E7B5A;
+  padding: 12px 25px;
+  background-color: #0071C2;
   color: #fff;
   border: none;
   border-radius: 4px;
@@ -126,7 +131,7 @@ h1:hover {
 }
 
 #hotelSearchForm button:hover {
-  background-color: #16634f;
+  background-color: #005ea6;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
   animation: pulseButton 0.5s ease-in-out;
@@ -149,7 +154,8 @@ h1:hover {
   box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
   transition: opacity 0.3s ease, transform 0.3s ease;
   width: 100%;
-  margin: 0 auto;
+  max-width: 600px;
+  margin: 20px auto;
 }
 
 @keyframes pulse { 
@@ -158,19 +164,17 @@ h1:hover {
   100% { opacity: 1; transform: scale(1); } 
 }
 
-#results {
-  display: flex;
-  gap: 20px;
-  width: 100%;
-}
-
 #results h2 {
-  color: #0071C2;
-  margin-bottom: 15px;
-  font-size: 1.6rem;
+  color: #003580;
+  margin-bottom: 20px;
+  font-size: 1.8rem;
   font-weight: 600;
+  text-transform: capitalize;
+  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
   transition: color 0.3s ease, transform 0.2s ease;
   animation: slideDown 0.5s ease-out;
+  text-align: center;
+  margin-top: 20px;
 }
 
 @keyframes slideDown {
@@ -179,132 +183,17 @@ h1:hover {
 }
 
 #results h2:hover {
-  color: #005ea6;
+  color: #00264d;
   transform: translateX(2px);
 }
 
-.results-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  margin-bottom: 15px;
-  background-color: #f5f5f5;
-  padding: 10px;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.results-header:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-}
-
-.sort-select, .show-map {
-  padding: 8px 12px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  background-color: #fff;
-  cursor: pointer;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-}
-
-.sort-select:focus, .show-map:hover {
-  border-color: #0071C2;
-  box-shadow: 0 0 6px rgba(0, 113, 194, 0.3);
-}
-
-.show-map {
-  background-color: #1E7B5A;
-  color: #fff;
-  border: none;
-  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-}
-
-.show-map:hover {
-  background-color: #16634f;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-}
-
-.filters-sidebar {
-  width: 25%;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  padding: 15px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-.filters-sidebar:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
-}
-
-.filters-sidebar h3 {
-  color: #0071C2;
-  font-size: 1.2rem;
-  margin-bottom: 10px;
-  font-weight: 600;
-  text-transform: uppercase;
-  padding-bottom: 10px;
-  border-bottom: 1px solid #ddd;
-  transition: color 0.3s ease;
-}
-
-.filters-sidebar h3:hover {
-  color: #005ea6;
-}
-
-.filters-sidebar .filter-group {
-  margin-bottom: 15px;
-}
-
-.filters-sidebar .filter-group label {
-  display: block;
-  color: #4a5568;
-  font-size: 0.9rem;
-  margin-bottom: 5px;
-  cursor: pointer;
-  transition: color 0.3s ease;
-}
-
-.filters-sidebar .filter-group label:hover {
-  color: #0071C2;
-}
-
-.filters-sidebar .filter-group input[type="checkbox"] {
-  margin-right: 5px;
-  cursor: pointer;
-}
-
-.filters-sidebar .filter-group select {
-  width: 100%;
-  padding: 8px;
-  border: 1px solid #ddd;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  background-color: #fff;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease;
-  cursor: pointer;
-}
-
-.filters-sidebar .filter-group select:focus {
-  border-color: #0071C2;
-  box-shadow: 0 0 6px rgba(0, 113, 194, 0.3);
-}
-
 .results-grid {
-  width: 75%;
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
   gap: 20px;
-  padding: 0;
+  padding: 20px 0;
+  margin: 0 auto;
+  max-width: 1200px;
   animation: fadeIn 0.5s ease-in;
 }
 
@@ -315,7 +204,7 @@ h1:hover {
 
 .hotel-card {
   background-color: #fff;
-  border-radius: 8px;
+  border-radius: 10px;
   overflow: hidden;
   box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
   transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
@@ -375,7 +264,7 @@ h1:hover {
 }
 
 .hotel-details h3 {
-  color: #0071C2;
+  color: #003580;
   font-size: 1.5rem;
   margin-bottom: 10px;
   font-weight: 600;
@@ -388,7 +277,7 @@ h1:hover {
 }
 
 .hotel-details h3:hover {
-  color: #005ea6;
+  color: #00264d;
   transform: translateX(2px);
   animation: wiggle 0.3s ease-out;
 }
@@ -418,7 +307,7 @@ h1:hover {
 
 .amenities .amenity:hover {
   background-color: #e2e8f0;
-  color: #0071C2;
+  color: #003580;
   animation: fadePulse 0.5s ease-in-out;
 }
 
@@ -434,7 +323,7 @@ h1:hover {
 }
 
 .rating:hover {
-  color: #0071C2;
+  color: #003580;
   animation: fadePulse 0.5s ease-in-out;
 }
 
@@ -462,7 +351,7 @@ h1:hover {
 }
 
 .location {
-  color: #1E7B5A;
+  color: #0071C2;
   font-size: 1rem;
   margin-bottom: 5px;
   text-decoration: none;
@@ -472,7 +361,7 @@ h1:hover {
 }
 
 .location:hover {
-  color: #16634f;
+  color: #005ea6;
   text-decoration: underline;
   animation: underlineGrow 0.3s ease-out;
 }
@@ -493,31 +382,50 @@ h1:hover {
 
 .coordinates:hover {
   opacity: 1;
-  color: #0071C2;
+  color: #003580;
   animation: fadeInCoord 0.3s ease-in;
 }
 
 @keyframes fadeInCoord {
   from { opacity: 0.8; color: #666; }
-  to { opacity: 1; color: #0071C2; }
+  to { opacity: 1; color: #003580; }
 }
 
-.room-type, .cancellation {
-  color: #4a5568;
-  font-size: 0.9rem;
-  margin-bottom: 5px;
-  transition: color 0.3s ease;
+.description {
+  color: #555;
+  font-size: 1rem;
+  margin-bottom: 15px;
+  line-height: 1.4;
+  max-height: 4.2em;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  display: -webkit-box;
+  -webkit-line-clamp: 3;
+  -webkit-box-orient: vertical;
+  transition: color 0.3s ease, max-height 0.3s ease;
   cursor: pointer;
 }
 
-.room-type:hover, .cancellation:hover {
-  color: #0071C2;
-  animation: fadePulse 0.5s ease-in-out;
+.description:hover {
+  max-height: none;
+  color: #333;
+  -webkit-line-clamp: unset;
+  overflow: visible;
+  animation: expandText 0.5s ease-out;
+  background-color: #f9f9f9;
+  padding: 5px;
+  border-radius: 4px;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+}
+
+@keyframes expandText {
+  from { max-height: 4.2em; opacity: 0.9; transform: scale(1); }
+  to { max-height: none; opacity: 1; transform: scale(1.02); }
 }
 
 .price {
   color: #FF0000;
-  font-size: 1.4rem;
+  font-size: 1.2rem;
   font-weight: bold;
   margin-bottom: 15px;
   display: flex;
@@ -557,19 +465,19 @@ h1:hover {
   to { color: #444; opacity: 1; }
 }
 
-.book-now, .add-button {
-  background-color: #1E7B5A;
+.book-now {
+  background-color: #0071C2;
   color: #fff;
   border: none;
-  padding: 10px 20px;
+  padding: 12px 25px;
   border-radius: 4px;
   font-size: 1rem;
   cursor: pointer;
   transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
   display: inline-block;
   width: 100%;
-  max-width: 150px;
-  margin-top: 10px;
+  max-width: 200px;
+  margin-top: 15px;
   text-align: center;
   font-weight: 600;
   text-transform: uppercase;
@@ -578,58 +486,10 @@ h1:hover {
   animation: buttonAppear 0.5s ease-out;
 }
 
-.book-now:hover, .add-button:hover {
-  background-color: #16634f;
+.book-now:hover {
+  background-color: #005ea6;
   transform: translateY(-2px);
   box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  animation: buttonPulse 0.5s ease-in-out;
-}
-
-.view-rooms {
-  background-color: #1E7B5A;
-  color: #fff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-  margin-top: 5px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  animation: buttonAppear 0.5s ease-out;
-}
-
-.view-rooms:hover {
-  background-color: #16634f;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
-  animation: buttonPulse 0.5s ease-in-out;
-}
-
-.compare-button {
-  background-color: #0071C2;
-  color: #fff;
-  border: none;
-  padding: 8px 16px;
-  border-radius: 4px;
-  font-size: 0.9rem;
-  cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-  margin-top: 5px;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
-  animation: buttonAppear 0.5s ease-out;
-}
-
-.compare-button:hover {
-  background-color: #005ea6;
-  transform: translateY(-1px);
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15);
   animation: buttonPulse 0.5s ease-in-out;
 }
 
@@ -639,26 +499,18 @@ h1:hover {
 }
 
 @keyframes buttonPulse {
-  0% { transform: translateY(-2px); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); }
-  50% { transform: translateY(-4px); box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2); }
-  100% { transform: translateY(-2px); box-shadow: 0 2px 6px rgba(0, 0, 0, 0.15); }
-}
-
-@media (max-width: 1024px) {
-  .container {
-    flex-direction: column;
-  }
-  .filters-sidebar, .results-grid {
-    width: 100%;
-  }
-  #results {
-    flex-direction: column;
-  }
+  0% { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); }
+  50% { transform: translateY(-4px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); }
+  100% { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); }
 }
 
 @media (max-width: 768px) {
+  body {
+    padding: 10px;
+  }
   #hotelSearchForm {
     flex-direction: column;
+    padding: 20px;
   }
   #hotelSearchForm input, #hotelSearchForm button {
     width: 100%;
@@ -667,10 +519,10 @@ h1:hover {
     padding: 15px 0;
   }
   h1 {
-    font-size: 1.8rem;
+    font-size: 2rem;
   }
   #results h2 {
-    font-size: 1.4rem;
+    font-size: 1.5rem;
   }
   .hotel-details h3 {
     font-size: 1.3rem;
@@ -678,7 +530,10 @@ h1:hover {
   .hotel-image img {
     height: 150px;
   }
-  .book-now, .add-button, .view-rooms, .compare-button {
+  .book-now {
     max-width: 100%;
+  }
+  .container {
+    padding: 10px;
   }
 }
