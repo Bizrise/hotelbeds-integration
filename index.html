@@ -1,44 +1,61 @@
-/* General Reset */
-* {
-  margin: 0;
-  padding: 0;
-  box-sizing: border-box;
-  font-family: Arial, sans-serif;
-}
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hotel Beds Booking</title>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <div class="booking-card">
+            <h1>Find Your Perfect Stay</h1>
+            <form class="form-grid">
+                <div class="form-group">
+                    <label for="destination">Destination</label>
+                    <input 
+                        type="text" 
+                        id="destination" 
+                        placeholder="e.g., LON for London" 
+                        required
+                    >
+                </div>
 
-body {
-  background-color: #f8f9fa;
-  color: #333;
-  text-align: center;
-}
+                <div class="form-group">
+                    <label for="checkin">Check-in</label>
+                    <input 
+                        type="date" 
+                        id="checkin" 
+                        required
+                    >
+                </div>
 
-/* Header */
-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 15px 50px;
-  background-color: #004080;
-  color: white;
-}
+                <div class="form-group">
+                    <label for="checkout">Check-out</label>
+                    <input 
+                        type="date" 
+                        id="checkout" 
+                        required
+                    >
+                </div>
 
-header .logo {
-  font-size: 24px;
-  font-weight: bold;
-}
+                <div class="form-group">
+                    <label for="travellers">Travellers</label>
+                    <select id="travellers" required>
+                        <option value="">Select</option>
+                        <option value="1">1 Traveller</option>
+                        <option value="2">2 Travellers</option>
+                        <option value="3">3 Travellers</option>
+                        <option value="4">4 Travellers</option>
+                        <option value="5">5+ Travellers</option>
+                    </select>
+                </div>
 
-nav a {
-  color: white;
-  text-decoration: none;
-  margin: 0 15px;
-  font-weight: bold;
-}
+                <button type="submit" class="submit-btn">Search Hotels</button>
+            </form>
+        </div>
+    </div>
 
-nav a:hover {
-  text-decoration: underline;
-}
-
-/* Hero Section */
-.hero {
-  background-image: url('https://source.unsplash.com/1600x600/?hotel,city'); 
-  background-size: cover;
+    <script src="js/main.js"></script>
+</body>
+</html>
