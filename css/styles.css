@@ -2,357 +2,153 @@
   margin: 0;
   padding: 0;
   box-sizing: border-box;
-  font-family: 'Arial', 'Helvetica', sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
 }
 
 body {
-  background-color: #f5f6f7;
+  background-color: #f8f9fa;
   color: #333;
   line-height: 1.6;
-  font-size: 14px;
 }
 
 .container {
   max-width: 1200px;
   margin: 0 auto;
   padding: 20px;
-  transition: padding 0.3s ease;
 }
 
 header {
   text-align: center;
-  padding: 30px 0;
+  padding: 40px 0;
   background-color: #fff;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  border-radius: 10px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
   margin-bottom: 20px;
-  transition: transform 0.3s ease, box-shadow 0.3s ease;
-}
-
-header:hover {
-  transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
 }
 
 h1 {
-  color: #003580;
+  color: #2c3e50;
   font-size: 2.5rem;
   font-weight: 700;
-  text-transform: uppercase;
-  letter-spacing: 1px;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  transition: color 0.3s ease;
-}
-
-h1:hover {
-  color: #00264d;
 }
 
 #hotelSearchForm {
   background-color: #fff;
-  padding: 20px;
-  border-radius: 10px;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+  padding: 25px;
+  border-radius: 12px;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
   margin-bottom: 30px;
   display: flex;
   gap: 15px;
   flex-wrap: wrap;
-  align-items: center;
-  transition: box-shadow 0.3s ease, transform 0.3s ease;
-  cursor: pointer;
-  animation: slideIn 0.5s ease-out;
-}
-
-@keyframes slideIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-#hotelSearchForm:hover {
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
-  transform: translateY(-2px);
 }
 
 #hotelSearchForm input {
   padding: 12px;
   border: 1px solid #ddd;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 1rem;
   flex: 1;
   min-width: 200px;
-  transition: border-color 0.3s ease, box-shadow 0.3s ease, background-color 0.3s ease;
-  background-color: #f9f9f9;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05) inset;
+  transition: border-color 0.3s ease;
 }
 
 #hotelSearchForm input:focus {
-  border-color: #003580;
+  border-color: #3498db;
   outline: none;
-  box-shadow: 0 0 6px rgba(0, 53, 128, 0.3), 0 1px 3px rgba(0, 0, 0, 0.05) inset;
-  background-color: #fff;
-  transform: scale(1.02);
-  animation: pulseInput 0.5s ease-out;
-}
-
-@keyframes pulseInput {
-  0% { transform: scale(1); box-shadow: 0 0 6px rgba(0, 53, 128, 0.3); }
-  50% { transform: scale(1.03); box-shadow: 0 0 8px rgba(0, 53, 128, 0.4); }
-  100% { transform: scale(1.02); box-shadow: 0 0 6px rgba(0, 53, 128, 0.3); }
 }
 
 #hotelSearchForm button {
   padding: 12px 25px;
-  background-color: #003580;
+  background-color: #3498db;
   color: #fff;
   border: none;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  animation: bounce 0.5s ease-out;
-}
-
-@keyframes bounce {
-  0%, 20%, 50%, 80%, 100% { transform: translateY(0); }
-  40% { transform: translateY(-5px); }
-  60% { transform: translateY(-2px); }
+  transition: background-color 0.3s ease;
 }
 
 #hotelSearchForm button:hover {
-  background-color: #00264d;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  animation: pulseButton 0.5s ease-in-out;
-}
-
-@keyframes pulseButton {
-  0% { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); }
-  50% { transform: translateY(-4px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); }
-  100% { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); }
+  background-color: #2980b9;
 }
 
 .loading {
   font-style: italic;
-  color: #666;
+  color: #7f8c8d;
   text-align: center;
   padding: 20px;
   animation: pulse 1.5s infinite;
-  background-color: #fff;
-  border-radius: 8px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-  transition: opacity 0.3s ease, transform 0.3s ease;
 }
 
 @keyframes pulse { 
-  0% { opacity: 1; transform: scale(1); } 
-  50% { opacity: 0.7; transform: scale(1.02); } 
-  100% { opacity: 1; transform: scale(1); } 
+  0% { opacity: 1; } 
+  50% { opacity: 0.6; } 
+  100% { opacity: 1; } 
 }
 
 #results h2 {
-  color: #003580;
+  color: #2c3e50;
   margin-bottom: 20px;
   font-size: 1.8rem;
-  font-weight: 600;
-  text-transform: capitalize;
-  text-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
-  transition: color 0.3s ease, transform 0.2s ease;
-  animation: slideDown 0.5s ease-out;
-}
-
-@keyframes slideDown {
-  from { opacity: 0; transform: translateY(-20px); }
-  to { opacity: 1; transform: translateY(0); }
-}
-
-#results h2:hover {
-  color: #00264d;
-  transform: translateX(2px);
 }
 
 .results-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
-  gap: 20px;
+  gap: 25px;
   padding: 20px 0;
-  animation: fadeIn 0.5s ease-in;
-}
-
-@keyframes fadeIn {
-  from { opacity: 0; transform: translateY(20px); }
-  to { opacity: 1; transform: translateY(0); }
 }
 
 .hotel-card {
   background-color: #fff;
-  border-radius: 10px;
+  border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
-  transition: transform 0.3s ease, box-shadow 0.3s ease, opacity 0.3s ease;
-  position: relative;
-  border: 1px solid #f5f5f5;
-  animation: zoomIn 0.5s ease-out;
-}
-
-@keyframes zoomIn {
-  from { opacity: 0; transform: scale(0.95); }
-  to { opacity: 1; transform: scale(1); }
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
 }
 
 .hotel-card:hover {
   transform: translateY(-5px);
-  box-shadow: 0 6px 18px rgba(0, 0, 0, 0.15);
-  opacity: 0.95;
-  animation: bounceCard 0.5s ease-out;
-}
-
-@keyframes bounceCard {
-  0%, 20%, 50%, 80%, 100% { transform: translateY(-5px); }
-  40% { transform: translateY(-8px); }
-  60% { transform: translateY(-6px); }
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
 }
 
 .hotel-image img {
   width: 100%;
   height: 200px;
   object-fit: cover;
-  border-bottom: 2px solid #f5f5f5;
-  transition: opacity 0.3s ease, transform 0.3s ease;
-  cursor: pointer;
-}
-
-.hotel-image img:hover {
-  opacity: 0.9;
-  transform: scale(1.05);
-  animation: pulseImage 0.5s ease-in-out;
-}
-
-@keyframes pulseImage {
-  0% { transform: scale(1.05); opacity: 0.9; }
-  50% { transform: scale(1.06); opacity: 0.85; }
-  100% { transform: scale(1.05); opacity: 0.9; }
+  border-bottom: 2px solid #eee;
 }
 
 .hotel-details {
-  padding: 15px;
-  background-color: #fff;
-  border-top: 1px solid #f5f5f5;
-  transition: padding 0.3s ease, background-color 0.3s ease;
-}
-
-.hotel-details:hover {
-  background-color: #f9f9f9;
+  padding: 20px;
 }
 
 .hotel-details h3 {
-  color: #003580;
+  color: #2c3e50;
   font-size: 1.5rem;
   margin-bottom: 10px;
-  font-weight: 600;
-  line-height: 1.2;
-  text-overflow: ellipsis;
-  white-space: nowrap;
-  overflow: hidden;
-  transition: color 0.3s ease, transform 0.2s ease;
-  cursor: pointer;
-}
-
-.hotel-details h3:hover {
-  color: #00264d;
-  transform: translateX(2px);
-  animation: wiggle 0.3s ease-out;
-}
-
-@keyframes wiggle {
-  0%, 100% { transform: translateX(0); }
-  25% { transform: translateX(2px); }
-  75% { transform: translateX(-2px); }
 }
 
 .rating {
-  color: #666;
+  color: #7f8c8d;
   font-size: 0.9rem;
   margin-bottom: 5px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  transition: color 0.3s ease;
-  cursor: pointer;
-}
-
-.rating:hover {
-  color: #003580;
-  animation: fadePulse 0.5s ease-in-out;
-}
-
-@keyframes fadePulse {
-  0% { opacity: 1; }
-  50% { opacity: 0.8; transform: scale(1.05); }
-  100% { opacity: 1; transform: scale(1); }
 }
 
 .stars {
-  color: #ffba00;
-  font-size: 1rem;
-  transition: color 0.3s ease;
-}
-
-.stars:hover {
-  color: #e67e00;
-  animation: starTwinkle 0.5s ease-in-out infinite;
-}
-
-@keyframes starTwinkle {
-  0% { opacity: 1; }
-  50% { opacity: 0.7; transform: scale(1.1); }
-  100% { opacity: 1; transform: scale(1); }
+  color: #f1c40f;
 }
 
 .location {
-  color: #0071c2;
+  color: #2980b9;
   font-size: 1rem;
   margin-bottom: 5px;
-  text-decoration: none;
-  display: inline-block;
-  transition: color 0.3s ease, text-decoration 0.3s ease;
-  cursor: pointer;
-}
-
-.location:hover {
-  color: #005ea6;
-  text-decoration: underline;
-  animation: underlineGrow 0.3s ease-out;
-}
-
-@keyframes underlineGrow {
-  from { text-decoration: none; }
-  to { text-decoration: underline; transform: scale(1.02); }
 }
 
 .coordinates {
-  color: #666;
+  color: #7f8c8d;
   font-size: 0.8rem;
   margin-bottom: 10px;
-  opacity: 0.8;
-  transition: opacity 0.3s ease, color 0.3s ease;
-  cursor: pointer;
-}
-
-.coordinates:hover {
-  opacity: 1;
-  color: #003580;
-  animation: fadeInCoord 0.3s ease-in;
-}
-
-@keyframes fadeInCoord {
-  from { opacity: 0.8; color: #666; }
-  to { opacity: 1; color: #003580; }
 }
 
 .description {
@@ -360,112 +156,28 @@ h1:hover {
   font-size: 1rem;
   margin-bottom: 15px;
   line-height: 1.4;
-  max-height: 4.2em;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  display: -webkit-box;
-  -webkit-line-clamp: 3;
-  -webkit-box-orient: vertical;
-  transition: color 0.3s ease, max-height 0.3s ease;
-  cursor: pointer;
-}
-
-.description:hover {
-  max-height: none;
-  color: #333;
-  -webkit-line-clamp: unset;
-  overflow: visible;
-  animation: expandText 0.5s ease-out;
-  background-color: #f9f9f9;
-  padding: 5px;
-  border-radius: 4px;
-  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
-}
-
-@keyframes expandText {
-  from { max-height: 4.2em; opacity: 0.9; transform: scale(1); }
-  to { max-height: none; opacity: 1; transform: scale(1.02); }
 }
 
 .price {
-  color: #008009;
+  color: #27ae60;
   font-size: 1.2rem;
   font-weight: bold;
   margin-bottom: 15px;
-  display: flex;
-  align-items: center;
-  gap: 5px;
-  transition: color 0.3s ease, transform 0.2s ease;
-  cursor: pointer;
-}
-
-.price:hover {
-  color: #006600;
-  transform: translateX(2px);
-  animation: pricePulse 0.5s ease-in-out;
-}
-
-@keyframes pricePulse {
-  0% { transform: translateX(0); color: #008009; }
-  50% { transform: translateX(4px); color: #006600; }
-  100% { transform: translateX(2px); color: #006600; }
-}
-
-.price span {
-  font-size: 0.9rem;
-  color: #666;
-  font-weight: normal;
-  transition: color 0.3s ease;
-  cursor: pointer;
-}
-
-.price span:hover {
-  color: #444;
-  animation: textFade 0.3s ease-in;
-}
-
-@keyframes textFade {
-  from { color: #666; opacity: 0.8; }
-  to { color: #444; opacity: 1; }
 }
 
 .book-now {
-  background-color: #0071c2;
+  background-color: #e74c3c;
   color: #fff;
   border: none;
   padding: 10px 20px;
-  border-radius: 4px;
+  border-radius: 8px;
   font-size: 1rem;
   cursor: pointer;
-  transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
-  display: inline-block;
-  width: 100%;
-  max-width: 200px;
-  margin-top: 10px;
-  text-align: center;
-  font-weight: 600;
-  text-transform: uppercase;
-  letter-spacing: 0.5px;
-  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-  animation: buttonAppear 0.5s ease-out;
-}
-
-@keyframes buttonAppear {
-  from { opacity: 0; transform: scale(0.9); }
-  to { opacity: 1; transform: scale(1); }
+  transition: background-color 0.3s ease;
 }
 
 .book-now:hover {
-  background-color: #005ea6;
-  transform: translateY(-2px);
-  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15);
-  animation: buttonPulse 0.5s ease-in-out;
-}
-
-@keyframes buttonPulse {
-  0% { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); }
-  50% { transform: translateY(-4px); box-shadow: 0 6px 12px rgba(0, 0, 0, 0.2); }
-  100% { transform: translateY(-2px); box-shadow: 0 4px 8px rgba(0, 0, 0, 0.15); }
+  background-color: #c0392b;
 }
 
 @media (max-width: 768px) {
@@ -477,23 +189,5 @@ h1:hover {
   }
   .results-grid {
     grid-template-columns: 1fr;
-  }
-  header {
-    padding: 20px 0;
-  }
-  h1 {
-    font-size: 2rem;
-  }
-  #results h2 {
-    font-size: 1.5rem;
-  }
-  .hotel-details h3 {
-    font-size: 1.3rem;
-  }
-  .hotel-image img {
-    height: 150px;
-  }
-  .book-now {
-    max-width: 100%;
   }
 }
