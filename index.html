@@ -3,12 +3,12 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hotel Explorer</title>
+  <title>Hotel Finder</title>
   <link rel="stylesheet" href="/style.css"> <!-- Link to root path for CSS, ensuring no 404 -->
 </head>
 <body>
   <header class="container">
-    <h1>Hotel Explorer</h1>
+    <h1>Hotel Finder</h1>
   </header>
   <div class="container">
     <form id="hotelSearchForm">
@@ -18,7 +18,44 @@
       <input type="number" id="travellers" placeholder="Travellers" min="1" required>
       <button type="submit">Search Hotels</button>
     </form>
-    <section id="results"></section>
+    <section id="results">
+      <div class="filters-sidebar">
+        <h3>Filters</h3>
+        <div class="filter-group">
+          <label><input type="checkbox" name="breakfast"> Incl. breakfast (hotels)</label>
+          <label><input type="checkbox" name="halfBoard"> Half board</label>
+          <label><input type="checkbox" name="selfCatering"> Self-catering/apartments</label>
+        </div>
+        <div class="filter-group">
+          <h3>Category</h3>
+          <label><input type="checkbox" name="stars5"> ★★★★★</label>
+          <label><input type="checkbox" name="stars4"> ★★★★</label>
+          <label><input type="checkbox" name="stars3"> ★★★</label>
+        </div>
+        <div class="filter-group">
+          <h3>Product Highlights</h3>
+          <label><input type="checkbox" name="topHotels"> Top hotels</label>
+          <label><input type="checkbox" name="platinumPortfolio"> Platinum portfolio</label>
+        </div>
+        <div class="filter-group">
+          <h3>Close to Landmark</h3>
+          <select name="landmark">
+            <option value="">Choose landmark</option>
+            <option value="tokyoTower">Tokyo Tower</option>
+            <option value="shinjuku">Shinjuku</option>
+          </select>
+        </div>
+        <div class="filter-group">
+          <h3>Map Location Address</h3>
+          <select name="zone">
+            <option value="">Zone</option>
+            <option value="tokyoCity">Tokyo City</option>
+            <option value="shinagawa">Shinagawa</option>
+          </select>
+        </div>
+      </div>
+      <div class="results-grid" id="results-grid"></div>
+    </section>
   </div>
   <script src="/main.js"></script> <!-- Link to root path for JavaScript, ensuring no 404 -->
 </body>
