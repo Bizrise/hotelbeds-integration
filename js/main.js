@@ -125,7 +125,8 @@ async function processRequest(formData, maxAttempts = 3) {
                 result = JSON.parse(textResponse);
             } catch (jsonError) {
                 console.error('Invalid JSON response:', jsonError);
-                result = { error: `Invalid JSON response: ${textResponse}` };
+                // If JSON parsing fails, treat the raw text as the result for display
+                result = { rawResponse: textResponse, error: 'Invalid JSON response received from webhook' };
             }
 
             return result;
@@ -207,6 +208,13 @@ function displayResults(result) {
     if (result.error) {
         resultsContainer.style.backgroundColor = '#ffebee'; // Light red for errors
         resultsContainer.innerHTML = `<p style="color: #d32f2f;">Error: ${result.error}</p>`;
+        if (result.rawResponse) {
+            resultsContainer.innerHTML += `
+                <pre style="margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px; overflow-x: auto; white-space: pre-wrap;">
+                    Raw Response: ${result.rawResponse}
+                </pre>
+            `;
+        }
     } else {
         resultsContainer.style.backgroundColor = '#e8f5e9'; // Light green for success
         resultsContainer.innerHTML = '<h3>Your Search Results:</h3>';
@@ -254,4 +262,6 @@ function displayResults(result) {
 
     // Show the results container
     resultsContainer.style.display = 'block';
+    isProcessing = false;
+    currentRequest = null;
 }
