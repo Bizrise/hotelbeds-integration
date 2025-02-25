@@ -27,12 +27,105 @@ document.addEventListener('DOMContentLoaded', () => {
     loadingIndicator.style.borderRadius = '6px';
     loadingIndicator.style.backgroundColor = '#f5f5f5';
     loadingIndicator.style.textAlign = 'center';
-    loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait (15 seconds).</p>';
+    loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait (10 seconds).</p>';
     document.querySelector('.booking-card').appendChild(loadingIndicator);
 });
 
 // Webhook URL for backend integration
 const WEBHOOK_URL = 'https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k';
+
+// State management
+let isProcessing = false;
+let currentRequest = null;
+
+// Handle tab visibility for better performance and retry
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden && isProcessing) {
+        console.log('Tab is hidden, pausing processing...');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        loadingIndicator.innerHTML = '<p style="color: #0077ff;">Search paused. Return to this tab to resume.</p>';
+    } else if (!document.hidden && isProcessing && currentRequest) {
+        console.log('Tab is visible, resuming or retrying processing...');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait (10 seconds).</p>';
+        retryProcessing(currentRequest);
+    }
+});
+
+// Function to retry processing if tab was hidden
+function retryProcessing(requestData) {
+    if (!isProcessing) return;
+
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    loadingIndicator.style.display = 'block';
+    document.getElementById('resultsContainer').style.display = 'none';
+
+    processRequest(requestData)
+        .then(() => isProcessing = false)
+        .catch(error => {
+            console.error('Retry failed:', error);
+            isProcessing = false;
+            displayResults({ error: 'Retry failed. Please try again.' });
+        });
+}
+
+// Function to process the request
+async function processRequest(formData) {
+    try {
+        const response = await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify(formData)
+        });
+
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        // Wait for 10 seconds before processing the response
+        await new Promise(resolve => {
+            const timeout = setTimeout(() => {
+                resolve();
+            }, 10000); // 10 seconds delay
+
+            // Ensure the timeout continues even if the tab is hidden
+            const checkInterval = setInterval(() => {
+                if (document.hidden) {
+                    console.log('Tab is hidden, keeping timeout alive...');
+                } else {
+                    clearInterval(checkInterval);
+                }
+            }, 1000);
+
+            // Clean up intervals when resolved
+            resolve(() => {
+                clearTimeout(timeout);
+                clearInterval(checkInterval);
+            });
+        });
+
+        // Get the raw text response for debugging
+        const textResponse = await response.text();
+        console.log('Raw Webhook Response:', textResponse);
+
+        // Try to parse as JSON, but handle non-JSON responses
+        let result;
+        try {
+            result = JSON.parse(textResponse);
+        } catch (jsonError) {
+            console.error('Invalid JSON response:', jsonError);
+            result = { error: `Invalid JSON response: ${textResponse}` };
+        }
+
+        // Display results
+        displayResults(result);
+
+    } catch (error) {
+        throw error;
+    }
+}
 
 // Basic form validation and submission handling
 const form = document.querySelector('.form-grid');
@@ -59,74 +152,43 @@ form.addEventListener('submit', async (e) => {
         travellers: parseInt(travellers) // Convert to integer for consistency
     };
 
+    if (isProcessing) {
+        alert('A search is already in progress. Please wait or refresh the page.');
+        return;
+    }
+
+    isProcessing = true;
+    currentRequest = formData;
+
     // Show loading indicator
     const loadingIndicator = document.getElementById('loadingIndicator');
     loadingIndicator.style.display = 'block';
     document.getElementById('resultsContainer').style.display = 'none';
 
-    try {
-        // Send POST request to the webhook immediately, but delay showing results
-        const response = await fetch(WEBHOOK_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData)
+    processRequest(formData)
+        .then(() => isProcessing = false)
+        .catch(error => {
+            console.error('Error processing request:', error);
+            isProcessing = false;
+            displayResults({ error: 'There was an error processing your request. Please try again.' });
         });
-
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        // Wait for 15 seconds before processing the response
-        await new Promise(resolve => setTimeout(resolve, 15000)); // 15 seconds delay
-
-        // Get the raw text response for debugging
-        const textResponse = await response.text();
-        console.log('Raw Webhook Response:', textResponse);
-
-        // Try to parse as JSON, but handle non-JSON responses
-        let result;
-        try {
-            result = JSON.parse(textResponse);
-        } catch (jsonError) {
-            console.error('Invalid JSON response:', jsonError);
-            // If JSON parsing fails, treat the raw text as the result for display
-            result = { rawResponse: textResponse, error: 'Invalid JSON response received from webhook' };
-        }
-
-        // Hide loading indicator and display results
-        loadingIndicator.style.display = 'none';
-        displayResults(result);
-
-    } catch (error) {
-        console.error('Error sending data to webhook:', error);
-        // Hide loading indicator and show error after delay
-        await new Promise(resolve => setTimeout(resolve, 15000)); // 15 seconds delay
-        loadingIndicator.style.display = 'none';
-        displayResults({ error: 'There was an error processing your request. Please try again.' });
-    }
 });
 
 // Function to display results on the webpage
 function displayResults(result) {
     const resultsContainer = document.getElementById('resultsContainer');
+    const loadingIndicator = document.getElementById('loadingIndicator');
     
+    loadingIndicator.style.display = 'none';
+
     if (result.error) {
         resultsContainer.style.backgroundColor = '#ffebee'; // Light red for errors
         resultsContainer.innerHTML = `<p style="color: #d32f2f;">Error: ${result.error}</p>`;
-        if (result.rawResponse) {
-            resultsContainer.innerHTML += `
-                <pre style="margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px; overflow-x: auto; white-space: pre-wrap;">
-                    Raw Response: ${result.rawResponse}
-                </pre>
-            `;
-        }
     } else {
         resultsContainer.style.backgroundColor = '#e8f5e9'; // Light green for success
         resultsContainer.innerHTML = '<h3>Your Search Results:</h3>';
 
-        // Check if the result has hotels
+        // Check if the result has a hotels array (nested under 'hotels' key)
         if (result.hotels && Array.isArray(result.hotels) && result.hotels.length > 0) {
             result.hotels.forEach((hotel, index) => {
                 // Extract hotel details from the response
@@ -169,4 +231,6 @@ function displayResults(result) {
 
     // Show the results container
     resultsContainer.style.display = 'block';
+    isProcessing = false;
+    currentRequest = null;
 }
