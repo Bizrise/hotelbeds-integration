@@ -2,14 +2,19 @@
 document.addEventListener('DOMContentLoaded', () => {
     const travellersSelect = document.getElementById('travellers');
     if (travellersSelect) { // Ensure the element exists
-        for (let i = 1; i <= 100; i++) {
-            const option = document.createElement('option');
-            option.value = i;
-            option.textContent = `${i} Traveller${i > 1 ? 's' : ''}`;
-            travellersSelect.appendChild(option);
+        try {
+            for (let i = 1; i <= 100; i++) {
+                const option = document.createElement('option');
+                option.value = i;
+                option.textContent = `${i} Traveller${i > 1 ? 's' : ''}`;
+                travellersSelect.appendChild(option);
+            }
+            console.log('Travellers dropdown populated successfully with 100 options.');
+        } catch (error) {
+            console.error('Error populating travellers dropdown:', error);
         }
     } else {
-        console.error('Travellers select element not found in the DOM.');
+        console.error('Travellers select element not found in the DOM. Check index.html for the <select> with id="travellers".');
     }
 
     // Create a results container to display the webhook response
