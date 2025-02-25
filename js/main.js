@@ -128,10 +128,15 @@ async function processRequest(formData, maxAttempts = 3) {
             const textResponse = await response.text();
             console.log('Raw Webhook Response:', textResponse);
 
-            // Try to parse as JSON, but handle non-JSON responses
+            // Try to parse as JSON, but handle long strings or non-JSON responses
             let result;
             try {
-                result = JSON.parse(textResponse);
+                // Attempt to clean up the response if it’s a JSON string with extra quotes
+                let cleanedResponse = textResponse.trim();
+                if (cleanedResponse.startsWith('"') && cleanedResponse.endsWith('"')) {
+                    cleanedResponse = cleanedResponse.slice(1, -1).replace(/\\"/g, '"'); // Remove outer quotes and escape sequences
+                }
+                result = JSON.parse(cleanedResponse);
             } catch (jsonError) {
                 console.error('Invalid JSON response:', jsonError);
                 // If JSON parsing fails, treat the raw text as the result for display
@@ -207,7 +212,7 @@ form.addEventListener('submit', async (e) => {
         });
 });
 
-// Function to display results on the webpage
+// Function to display results on the webpage in a Booking.com-inspired format
 function displayResults(result) {
     const resultsContainer = document.getElementById('resultsContainer');
     const loadingIndicator = document.getElementById('loadingIndicator');
@@ -238,21 +243,34 @@ function displayResults(result) {
                 
                 // Extract rate details (assuming multiple rates might exist)
                 let rateInfo = 'N/A';
+                let price = 'N/A';
+                let cancellationPolicy = 'N/A';
+                let rateKey = 'N/A';
                 if (hotel.rates && Array.isArray(hotel.rates)) {
                     const rate = hotel.rates[0] || {}; // Take the first rate for simplicity
-                    const rateKey = rate.rateKey || 'N/A';
-                    const price = rate.amount ? `$${rate.amount}` : 'N/A';
-                    const cancellationPolicy = rate.cancellationPolicies && rate.cancellationPolicies.length > 0 
+                    rateKey = rate.rateKey || 'N/A';
+                    price = rate.amount ? `$${rate.amount}` : 'N/A';
+                    cancellationPolicy = rate.cancellationPolicies && rate.cancellationPolicies.length > 0 
                         ? `Cancel by ${rate.cancellationPolicies[0].from} for $${rate.cancellationPolicies[0].amount}` 
                         : 'N/A';
                     rateInfo = `${price} | ${cancellationPolicy} | Rate Key: ${rateKey}`;
                 }
 
+                // Generate a placeholder image URL (since the API doesn’t provide images, we’ll use a default)
+                const hotelImage = `https://via.placeholder.com/300x200?text=${encodeURIComponent(hotelName)}`;
+
                 resultsContainer.innerHTML += `
-                    <div style="margin-top: 10px; padding: 10px; border: 1px solid #ddd; border-radius: 4px;">
-                        <h4>${index + 1}. ${hotelName} (Code: ${hotelCode})</h4>
-                        <p>Location: ${location}</p>
-                        <p>Price & Policy: ${rateInfo}</p>
+                    <div style="margin-top: 15px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
+                        <div style="display: flex; gap: 15px;">
+                            <img src="${hotelImage}" alt="${hotelName}" style="width: 300px; height: 200px; object-fit: cover; border-radius: 4px;">
+                            <div style="flex: 1;">
+                                <h4 style="color: #003580; margin-bottom: 10px;">${index + 1}. ${hotelName} (Code: ${hotelCode})</h4>
+                                <p style="margin-bottom: 8px;"><strong>Location:</strong> ${location}</p>
+                                <p style="margin-bottom: 8px;"><strong>Price:</strong> ${price}</p>
+                                <p style="margin-bottom: 8px;"><strong>Cancellation Policy:</strong> ${cancellationPolicy}</p>
+                                <p style="margin-bottom: 8px;"><strong>Rate Key:</strong> ${rateKey}</p>
+                            </div>
+                        </div>
                     </div>
                 `;
             });
