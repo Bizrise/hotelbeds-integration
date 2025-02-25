@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadingIndicator.style.borderRadius = '6px';
     loadingIndicator.style.backgroundColor = '#f5f5f5';
     loadingIndicator.style.textAlign = 'center';
-    loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait (10 seconds).</p>';
+    loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait (5 seconds).</p>';
     document.querySelector('.booking-card').appendChild(loadingIndicator);
 });
 
@@ -47,7 +47,7 @@ document.addEventListener('visibilitychange', () => {
     } else if (!document.hidden && isProcessing && currentRequest) {
         console.log('Tab is visible, resuming or retrying processing...');
         const loadingIndicator = document.getElementById('loadingIndicator');
-        loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait (10 seconds).</p>';
+        loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait (5 seconds).</p>';
         retryProcessing(currentRequest);
     }
 });
@@ -69,61 +69,79 @@ function retryProcessing(requestData) {
         });
 }
 
-// Function to process the request
-async function processRequest(formData) {
-    try {
-        const response = await fetch(WEBHOOK_URL, {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-            },
-            body: JSON.stringify(formData)
-        });
+// Function to process the request with timeout
+async function processRequest(formData, maxAttempts = 3) {
+    let attempts = 0;
 
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-
-        // Wait for 10 seconds before processing the response
-        await new Promise(resolve => {
-            const timeout = setTimeout(() => {
-                resolve();
-            }, 10000); // 10 seconds delay
-
-            // Ensure the timeout continues even if the tab is hidden
-            const checkInterval = setInterval(() => {
-                if (document.hidden) {
-                    console.log('Tab is hidden, keeping timeout alive...');
-                } else {
-                    clearInterval(checkInterval);
-                }
-            }, 1000);
-
-            // Clean up intervals when resolved
-            resolve(() => {
-                clearTimeout(timeout);
-                clearInterval(checkInterval);
-            });
-        });
-
-        // Get the raw text response for debugging
-        const textResponse = await response.text();
-        console.log('Raw Webhook Response:', textResponse);
-
-        // Try to parse as JSON, but handle non-JSON responses
-        let result;
+    while (attempts < maxAttempts) {
         try {
-            result = JSON.parse(textResponse);
-        } catch (jsonError) {
-            console.error('Invalid JSON response:', jsonError);
-            result = { error: `Invalid JSON response: ${textResponse}` };
+            const controller = new AbortController();
+            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5-second timeout for fetch
+
+            const response = await fetch(WEBHOOK_URL, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify(formData),
+                signal: controller.signal
+            });
+
+            clearTimeout(timeoutId);
+
+            if (!response.ok) {
+                throw new Error(`HTTP error! status: ${response.status}`);
+            }
+
+            // Wait for 5 seconds before processing the response
+            await new Promise(resolve => {
+                const timeout = setTimeout(() => {
+                    resolve();
+                }, 5000); // 5-second delay
+
+                // Ensure the timeout continues even if the tab is hidden
+                const checkInterval = setInterval(() => {
+                    if (document.hidden) {
+                        console.log('Tab is hidden, keeping timeout alive...');
+                    } else {
+                        clearInterval(checkInterval);
+                    }
+                }, 1000);
+
+                // Clean up intervals when resolved
+                resolve(() => {
+                    clearTimeout(timeout);
+                    clearInterval(checkInterval);
+                });
+            });
+
+            // Get the raw text response for debugging
+            const textResponse = await response.text();
+            console.log('Raw Webhook Response:', textResponse);
+
+            // Try to parse as JSON, but handle non-JSON responses
+            let result;
+            try {
+                result = JSON.parse(textResponse);
+            } catch (jsonError) {
+                console.error('Invalid JSON response:', jsonError);
+                result = { error: `Invalid JSON response: ${textResponse}` };
+            }
+
+            return result;
+
+        } catch (error) {
+            attempts++;
+            console.error(`Attempt ${attempts} failed:`, error);
+            if (error.name === 'AbortError') {
+                console.log('Fetch request timed out, retrying...');
+            } else if (attempts === maxAttempts) {
+                throw new Error(`Failed after ${maxAttempts} attempts: ${error.message}`);
+            }
+
+            // Wait briefly before retrying
+            await new Promise(resolve => setTimeout(resolve, 1000 * attempts)); // Exponential backoff
         }
-
-        // Display results
-        displayResults(result);
-
-    } catch (error) {
-        throw error;
     }
 }
 
@@ -166,10 +184,15 @@ form.addEventListener('submit', async (e) => {
     document.getElementById('resultsContainer').style.display = 'none';
 
     processRequest(formData)
-        .then(() => isProcessing = false)
+        .then(result => {
+            isProcessing = false;
+            currentRequest = null;
+            displayResults(result);
+        })
         .catch(error => {
             console.error('Error processing request:', error);
             isProcessing = false;
+            currentRequest = null;
             displayResults({ error: 'There was an error processing your request. Please try again.' });
         });
 });
@@ -231,6 +254,4 @@ function displayResults(result) {
 
     // Show the results container
     resultsContainer.style.display = 'block';
-    isProcessing = false;
-    currentRequest = null;
 }
