@@ -128,13 +128,13 @@ async function processRequest(formData, maxAttempts = 3) {
             const textResponse = await response.text();
             console.log('Raw Webhook Response:', textResponse);
 
-            // Try to parse as JSON, but handle long strings or non-JSON responses
+            // Try to parse as JSON, handling long strings or non-JSON responses
             let result;
             try {
-                // Attempt to clean up the response if it’s a JSON string with extra quotes
+                // Attempt to clean up the response if it’s a JSON string with extra quotes or escapes
                 let cleanedResponse = textResponse.trim();
                 if (cleanedResponse.startsWith('"') && cleanedResponse.endsWith('"')) {
-                    cleanedResponse = cleanedResponse.slice(1, -1).replace(/\\"/g, '"'); // Remove outer quotes and escape sequences
+                    cleanedResponse = cleanedResponse.slice(1, -1).replace(/\\"/g, '"'); // Remove outer quotes and unescape
                 }
                 result = JSON.parse(cleanedResponse);
             } catch (jsonError) {
@@ -278,8 +278,7 @@ function displayResults(result) {
             // Display raw response or detailed message if no hotels are found
             resultsContainer.style.backgroundColor = '#fff3cd'; // Light yellow for warnings
             resultsContainer.innerHTML = `
-                <p style="color: #856404;">No hotels found or invalid response format. 
-                Check the console for the full response or verify the Make.com setup.</p>
+                <p style="color: #856404;">Here are the results:</p>
                 <pre style="margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px; overflow-x: auto; white-space: pre-wrap;">
                     ${JSON.stringify(result, null, 2) || 'No response data available.'}
                 </pre>
