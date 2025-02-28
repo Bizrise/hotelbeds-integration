@@ -1,4 +1,135 @@
-// Function to process the request with proper handling
+// Initialize the page when DOM is fully loaded
+document.addEventListener('DOMContentLoaded', () => {
+    populateTravellersDropdown();
+    createResultsContainer();
+    setupFormListeners();
+});
+
+// Webhook URL for backend integration with Make.com
+const WEBHOOK_URL = 'https://hook.eu2.make.com/c453rhisc4nks6zgmz15h4dthq85ma3k';
+
+// State management
+let isProcessing = false;
+let currentRequest = null;
+
+// Populate travellers dropdown with options from 1 to 20
+function populateTravellersDropdown() {
+    const travellersSelect = document.getElementById('travellers');
+    
+    if (!travellersSelect) {
+        console.error('Travellers select element not found in the DOM. Check index.html for the <select> with id="travellers".');
+        return;
+    }
+    
+    // Clear existing options
+    travellersSelect.innerHTML = '';
+    
+    // Add a default option
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'Select Travellers';
+    defaultOption.disabled = true;
+    defaultOption.selected = true;
+    travellersSelect.appendChild(defaultOption);
+    
+    // Add options from 1 to 20
+    for (let i = 1; i <= 20; i++) {
+        const option = document.createElement('option');
+        option.value = i;
+        option.textContent = `${i} Traveller${i > 1 ? 's' : ''}`;
+        travellersSelect.appendChild(option);
+    }
+    
+    // Ensure the dropdown is visible
+    travellersSelect.style.display = 'block';
+    travellersSelect.style.width = '100%';
+    travellersSelect.style.padding = '10px';
+    travellersSelect.style.borderRadius = '4px';
+    travellersSelect.style.border = '1px solid #ccc';
+    
+    console.log('Travellers dropdown populated successfully with 20 options.');
+}
+
+// Create results container and loading indicator
+function createResultsContainer() {
+    const bookingCard = document.querySelector('.booking-card');
+    if (!bookingCard) {
+        console.error('Booking card element not found. Make sure you have a div with class="booking-card".');
+        return;
+    }
+    
+    // Create results container if it doesn't exist
+    if (!document.getElementById('resultsContainer')) {
+        const resultsContainer = document.createElement('div');
+        resultsContainer.id = 'resultsContainer';
+        resultsContainer.style.marginTop = '20px';
+        resultsContainer.style.padding = '15px';
+        resultsContainer.style.borderRadius = '6px';
+        resultsContainer.style.backgroundColor = '#f8f9fa';
+        resultsContainer.style.display = 'none'; // Hidden by default
+        bookingCard.appendChild(resultsContainer);
+    }
+    
+    // Create loading indicator if it doesn't exist
+    if (!document.getElementById('loadingIndicator')) {
+        const loadingIndicator = document.createElement('div');
+        loadingIndicator.id = 'loadingIndicator';
+        loadingIndicator.style.display = 'none';
+        loadingIndicator.style.marginTop = '20px';
+        loadingIndicator.style.padding = '15px';
+        loadingIndicator.style.borderRadius = '6px';
+        loadingIndicator.style.backgroundColor = '#f5f5f5';
+        loadingIndicator.style.textAlign = 'center';
+        loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait.</p>';
+        bookingCard.appendChild(loadingIndicator);
+    }
+}
+
+// Handle tab visibility for better performance and retry
+document.addEventListener('visibilitychange', () => {
+    if (document.hidden && isProcessing) {
+        console.log('Tab is hidden, pausing processing...');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        if (loadingIndicator) {
+            loadingIndicator.innerHTML = '<p style="color: #0077ff;">Search paused. Return to this tab to resume.</p>';
+        }
+    } else if (!document.hidden && isProcessing && currentRequest) {
+        console.log('Tab is visible, resuming or retrying processing...');
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        if (loadingIndicator) {
+            loadingIndicator.innerHTML = '<p style="color: #0077ff;">Resuming search... Please wait.</p>';
+        }
+        retryProcessing(currentRequest);
+    }
+});
+
+// Function to retry processing if tab was hidden
+function retryProcessing(requestData) {
+    if (!isProcessing) return;
+
+    const loadingIndicator = document.getElementById('loadingIndicator');
+    if (loadingIndicator) {
+        loadingIndicator.style.display = 'block';
+    }
+    
+    const resultsContainer = document.getElementById('resultsContainer');
+    if (resultsContainer) {
+        resultsContainer.style.display = 'none';
+    }
+
+    processRequest(requestData)
+        .then(result => {
+            isProcessing = false;
+            displayResults(result);
+        })
+        .catch(error => {
+            console.error('Retry failed:', error);
+            isProcessing = false;
+            displayResults({ error: 'Retry failed. Please try again.' });
+        });
+}
+
+// Function to process the request with proper error handling
 async function processRequest(formData, maxAttempts = 3) {
     let attempts = 0;
 
@@ -6,13 +137,17 @@ async function processRequest(formData, maxAttempts = 3) {
         try {
             // Show real-time status to user
             const loadingIndicator = document.getElementById('loadingIndicator');
-            loadingIndicator.innerHTML = `<p style="color: #0077ff;">Searching for hotels... Attempt ${attempts + 1}/${maxAttempts}</p>`;
+            if (loadingIndicator) {
+                loadingIndicator.innerHTML = `<p style="color: #0077ff;">Searching for hotels... Attempt ${attempts + 1}/${maxAttempts}</p>`;
+            }
             
             const controller = new AbortController();
             const timeoutId = setTimeout(() => controller.abort(), 300000); // 5-minute timeout for fetch
 
             // Let user know API call is in progress
-            loadingIndicator.innerHTML = '<p style="color: #0077ff;">Connecting to hotel database... Please wait.</p>';
+            if (loadingIndicator) {
+                loadingIndicator.innerHTML = '<p style="color: #0077ff;">Connecting to hotel database... Please wait.</p>';
+            }
             
             const response = await fetch(WEBHOOK_URL, {
                 method: 'POST',
@@ -30,7 +165,9 @@ async function processRequest(formData, maxAttempts = 3) {
             }
 
             // Let user know we're processing the results
-            loadingIndicator.innerHTML = '<p style="color: #0077ff;">Processing results... Almost done!</p>';
+            if (loadingIndicator) {
+                loadingIndicator.innerHTML = '<p style="color: #0077ff;">Processing results... Almost done!</p>';
+            }
             
             // Get the raw text response for debugging
             const textResponse = await response.text();
@@ -75,17 +212,24 @@ async function processRequest(formData, maxAttempts = 3) {
             // Exponential backoff with user feedback
             const waitTime = 1000 * attempts;
             const loadingIndicator = document.getElementById('loadingIndicator');
-            loadingIndicator.innerHTML = `<p style="color: #ff7700;">Connection issue. Retrying in ${waitTime/1000} seconds...</p>`;
+            if (loadingIndicator) {
+                loadingIndicator.innerHTML = `<p style="color: #ff7700;">Connection issue. Retrying in ${waitTime/1000} seconds...</p>`;
+            }
             
             await new Promise(resolve => setTimeout(resolve, waitTime));
         }
     }
 }
 
-// Improved function to display results with better error handling
+// Function to display results on the webpage in a Booking.com-inspired format
 function displayResults(result) {
     const resultsContainer = document.getElementById('resultsContainer');
     const loadingIndicator = document.getElementById('loadingIndicator');
+    
+    if (!resultsContainer || !loadingIndicator) {
+        console.error('Results container or loading indicator not found.');
+        return;
+    }
     
     loadingIndicator.style.display = 'none';
     resultsContainer.style.display = 'block';
@@ -209,3 +353,121 @@ function displayResults(result) {
         `;
     }
 }
+
+// Setup form listeners and validation
+function setupFormListeners() {
+    const form = document.querySelector('.form-grid');
+    if (!form) {
+        console.error('Form element not found. Make sure you have a form with class="form-grid".');
+        return;
+    }
+    
+    form.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        // Get form values
+        const destination = document.getElementById('destination')?.value.trim() || '';
+        const checkin = document.getElementById('checkin')?.value || '';
+        const checkout = document.getElementById('checkout')?.value || '';
+        const travellers = document.getElementById('travellers')?.value || '';
+
+        // Basic validation
+        if (!destination || !checkin || !checkout || !travellers) {
+            alert('Please fill in all fields.');
+            return;
+        }
+
+        // Validate dates
+        const checkinDate = new Date(checkin);
+        const checkoutDate = new Date(checkout);
+        const today = new Date();
+        today.setHours(0, 0, 0, 0);
+        
+        if (checkinDate < today) {
+            alert('Check-in date cannot be in the past.');
+            return;
+        }
+        
+        if (checkoutDate <= checkinDate) {
+            alert('Check-out date must be after check-in date.');
+            return;
+        }
+        
+        const daysDifference = (checkoutDate - checkinDate) / (1000 * 60 * 60 * 24);
+        if (daysDifference > 30) {
+            alert('Maximum stay is 30 days.');
+            return;
+        }
+
+        // Prepare the data to send to the webhook
+        const formData = {
+            destination: destination,
+            checkin: checkin,
+            checkout: checkout,
+            travellers: parseInt(travellers) // Convert to integer for consistency
+        };
+
+        if (isProcessing) {
+            alert('A search is already in progress. Please wait or refresh the page.');
+            return;
+        }
+
+        isProcessing = true;
+        currentRequest = formData;
+
+        // Show loading indicator and hide previous results
+        const loadingIndicator = document.getElementById('loadingIndicator');
+        const resultsContainer = document.getElementById('resultsContainer');
+        
+        if (loadingIndicator) {
+            loadingIndicator.style.display = 'block';
+        }
+        
+        if (resultsContainer) {
+            resultsContainer.style.display = 'none';
+        }
+
+        try {
+            const result = await processRequest(formData);
+            isProcessing = false;
+            currentRequest = null;
+            displayResults(result);
+        } catch (error) {
+            console.error('Error processing request:', error);
+            isProcessing = false;
+            currentRequest = null;
+            displayResults({ 
+                error: 'There was an error processing your request. Please try again.',
+                details: error.message
+            });
+        }
+    });
+}
+
+// Optional: Debug function to help identify issues with form elements
+function debugFormElements() {
+    const formElements = {
+        destination: document.getElementById('destination'),
+        checkin: document.getElementById('checkin'),
+        checkout: document.getElementById('checkout'),
+        travellers: document.getElementById('travellers'),
+        form: document.querySelector('.form-grid'),
+        bookingCard: document.querySelector('.booking-card'),
+        resultsContainer: document.getElementById('resultsContainer'),
+        loadingIndicator: document.getElementById('loadingIndicator')
+    };
+    
+    console.log('Form elements status:');
+    for (const [name, element] of Object.entries(formElements)) {
+        if (!element) {
+            console.error(`${name} element is missing`);
+            continue;
+        }
+        
+        const style = window.getComputedStyle(element);
+        console.log(`${name}: exists=${!!element}, display=${style.display}, visibility=${style.visibility}, height=${style.height}`);
+    }
+}
+
+// Call debug function after page load to help with troubleshooting
+setTimeout(debugFormElements, 1500);
