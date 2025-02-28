@@ -5,35 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Hotel Beds Booking</title>
     <link rel="stylesheet" href="css/styles.css">
-    <style>
-        /* Additional CSS for Booking.com-inspired hotel results */
-        .hotel-result {
-            margin-top: 15px;
-            padding: 15px;
-            border: 1px solid #ddd;
-            border-radius: 8px;
-            background: white;
-            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-            display: flex;
-            gap: 15px;
-        }
-        .hotel-image {
-            width: 300px;
-            height: 200px;
-            object-fit: cover;
-            border-radius: 4px;
-        }
-        .hotel-details {
-            flex: 1;
-        }
-        .hotel-details h4 {
-            color: #003580;
-            margin-bottom: 10px;
-        }
-        .hotel-details p {
-            margin-bottom: 8px;
-        }
-    </style>
 </head>
 <body>
     <div class="container">
@@ -42,53 +13,33 @@
             <form class="form-grid">
                 <div class="form-group">
                     <label for="destination">Destination</label>
-                    <input 
-                        type="text" 
-                        id="destination" 
-                        placeholder="e.g., LON for London" 
-                        required
-                    >
+                    <input type="text" id="destination" placeholder="e.g., LON for London" required>
                 </div>
-
                 <div class="form-group">
                     <label for="checkin">Check-in</label>
-                    <input 
-                        type="date" 
-                        id="checkin" 
-                        required
-                    >
+                    <input type="date" id="checkin" required>
                 </div>
-
                 <div class="form-group">
                     <label for="checkout">Check-out</label>
-                    <input 
-                        type="date" 
-                        id="checkout" 
-                        required
-                    >
+                    <input type="date" id="checkout" required>
                 </div>
-
                 <div class="form-group">
                     <label for="travellers">Travellers</label>
                     <select id="travellers" required data-test="travellers-dropdown" class="travellers-select">
                         <option value="">Select</option>
-                        <!-- JavaScript will populate options from 1 to 20 -->
                     </select>
-                    <p id="travellers-error" style="color: red; display: none;">Error: Travellers dropdown could not be loaded. Please check JavaScript or refresh the page. Details: <span id="travellers-error-details"></span></p>
+                    <p id="travellers-error" class="error-message">Error: Travellers dropdown could not be loaded. Please check JavaScript or refresh the page. Details: <span id="travellers-error-details"></span></p>
                 </div>
-
                 <button type="submit" class="submit-btn">Search Hotels</button>
             </form>
-
-            <div id="resultsContainer" style="margin-top: 20px; padding: 15px; border-radius: 6px; background-color: #f8f9fa; display: none;">
+            <div id="resultsContainer" class="results-container">
                 <h3>Your Search Results:</h3>
             </div>
-            <div id="loadingIndicator" style="margin-top: 20px; padding: 15px; border-radius: 6px; background-color: #f5f5f5; text-align: center; display: none;">
-                <p style="color: #0077ff;">Searching for hotels... Please wait (2 minutes).</p>
+            <div id="loadingIndicator" class="loading-indicator">
+                <p>Searching for hotels... Please wait (2 minutes).</p>
             </div>
         </div>
     </div>
-
     <script src="js/main.js"></script>
     <script>
         // Fallback to show error if JavaScript fails to load
