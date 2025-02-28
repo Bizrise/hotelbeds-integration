@@ -24,20 +24,17 @@ function populateTravellersDropdown() {
     // Clear existing options
     travellersSelect.innerHTML = '';
     
-    // Add a default option
-    const defaultOption = document.createElement('option');
-    defaultOption.value = '';
-    defaultOption.textContent = 'Select Travellers';
-    defaultOption.disabled = true;
-    defaultOption.selected = true;
-    travellersSelect.appendChild(defaultOption);
-    
     // Add options from 1 to 20
     for (let i = 1; i <= 20; i++) {
         const option = document.createElement('option');
         option.value = i;
         option.textContent = `${i} Traveller${i > 1 ? 's' : ''}`;
         travellersSelect.appendChild(option);
+    }
+    
+    // Ensure the first option is selected by default
+    if (travellersSelect.options.length > 0) {
+        travellersSelect.options[0].selected = true;
     }
     
     // Ensure the dropdown is visible
@@ -129,7 +126,7 @@ function retryProcessing(requestData) {
         });
 }
 
-// Function to process the request with proper error handling
+// Improved function to process the request with better error handling
 async function processRequest(formData, maxAttempts = 3) {
     let attempts = 0;
 
@@ -148,6 +145,8 @@ async function processRequest(formData, maxAttempts = 3) {
             if (loadingIndicator) {
                 loadingIndicator.innerHTML = '<p style="color: #0077ff;">Connecting to hotel database... Please wait.</p>';
             }
+            
+            console.log('Sending request to webhook:', JSON.stringify(formData, null, 2));
             
             const response = await fetch(WEBHOOK_URL, {
                 method: 'POST',
@@ -173,31 +172,70 @@ async function processRequest(formData, maxAttempts = 3) {
             const textResponse = await response.text();
             console.log('Raw Webhook Response:', textResponse);
 
-            // Parse the response
+            // Improved parsing logic to handle various response formats from Make.com
             let result;
             try {
-                // Try direct parsing first
-                result = JSON.parse(textResponse);
-            } catch (firstError) {
+                // Try to normalize the response format
+                if (!textResponse || textResponse.trim() === '') {
+                    throw new Error('Empty response received');
+                }
+                
+                let cleanedResponse = textResponse.trim();
+                
+                // Handle string escaped JSON (common with Make.com)
+                if (cleanedResponse.startsWith('"') && cleanedResponse.endsWith('"')) {
+                    cleanedResponse = cleanedResponse.slice(1, -1).replace(/\\"/g, '"').replace(/\\\\/g, '\\');
+                }
+                
+                // Try to parse as JSON
                 try {
-                    // Try handling escaped JSON string (common with Make.com)
-                    let cleanedResponse = textResponse.trim();
-                    if (cleanedResponse.startsWith('"') && cleanedResponse.endsWith('"')) {
-                        cleanedResponse = cleanedResponse.slice(1, -1).replace(/\\"/g, '"');
-                        result = JSON.parse(cleanedResponse);
-                    } else {
-                        throw firstError; // Original error was correct
-                    }
+                    result = JSON.parse(cleanedResponse);
                 } catch (jsonError) {
-                    console.error('Invalid JSON response:', jsonError);
-                    result = { 
-                        rawResponse: textResponse.substring(0, 1000), // Limit length for display
-                        error: 'Invalid response format received from the hotel search API'
+                    console.warn('JSON parse error:', jsonError);
+                    // Try one more time with additional cleanup for double-escaped strings
+                    try {
+                        cleanedResponse = cleanedResponse.replace(/\\\\"/g, '\\"');
+                        result = JSON.parse(cleanedResponse);
+                    } catch (secondJsonError) {
+                        console.error('Second JSON parse attempt failed:', secondJsonError);
+                        throw new Error('Unable to parse response as JSON');
+                    }
+                }
+                
+                // Handle accepted response with no data
+                if (cleanedResponse === 'Accepted' || (result && result === 'Accepted')) {
+                    return { 
+                        error: 'Invalid response format received from the hotel search API',
+                        rawResponse: 'Accepted',
+                        details: 'The API acknowledged the request but did not return hotel data. This may indicate an issue with the Make.com workflow or HotelBeds API configuration.'
                     };
                 }
+                
+                console.log('Parsed API Response:', result);
+                
+                // Validate expected result structure
+                if (!result || (
+                    !Array.isArray(result) && 
+                    !Array.isArray(result.hotels) && 
+                    (!result.data || !Array.isArray(result.data.hotels))
+                )) {
+                    return {
+                        error: 'Invalid response format received from the hotel search API',
+                        rawResponse: cleanedResponse.substring(0, 1000),
+                        details: 'The response does not contain the expected hotel data structure.'
+                    };
+                }
+                
+                return result;
+                
+            } catch (parseError) {
+                console.error('Response parsing error:', parseError);
+                return { 
+                    error: 'Invalid response format received from the hotel search API',
+                    rawResponse: textResponse.substring(0, 1000), // Limit length for display
+                    details: parseError.message
+                };
             }
-
-            return result;
 
         } catch (error) {
             attempts++;
@@ -206,7 +244,10 @@ async function processRequest(formData, maxAttempts = 3) {
             if (error.name === 'AbortError') {
                 console.log('Fetch request timed out, retrying...');
             } else if (attempts === maxAttempts) {
-                throw new Error(`Failed after ${maxAttempts} attempts: ${error.message}`);
+                return {
+                    error: `Failed after ${maxAttempts} attempts: ${error.message}`,
+                    details: 'Please check your network connection and try again.'
+                };
             }
 
             // Exponential backoff with user feedback
@@ -219,6 +260,11 @@ async function processRequest(formData, maxAttempts = 3) {
             await new Promise(resolve => setTimeout(resolve, waitTime));
         }
     }
+    
+    return {
+        error: 'Maximum retry attempts reached',
+        details: 'The service is currently unavailable. Please try again later.'
+    };
 }
 
 // Function to display results on the webpage in a Booking.com-inspired format
@@ -241,8 +287,10 @@ function displayResults(result) {
                 <h3 style="color: #d32f2f; margin-top: 0;">Search Error</h3>
                 <p>${result.error}</p>
                 <p>Please try again or modify your search criteria.</p>
+                ${result.details ? `<p style="color: #666; font-size: 14px;">${result.details}</p>` : ''}
             </div>
         `;
+        
         if (result.rawResponse) {
             resultsContainer.innerHTML += `
                 <details style="margin-top: 10px;">
@@ -260,12 +308,17 @@ function displayResults(result) {
     try {
         // Normalize result structure - handle different possible API response formats
         let hotels = [];
-        if (result.hotels && Array.isArray(result.hotels)) {
+        
+        if (Array.isArray(result)) {
+            hotels = result;
+        } else if (result.hotels && Array.isArray(result.hotels)) {
             hotels = result.hotels;
         } else if (result.data && result.data.hotels && Array.isArray(result.data.hotels)) {
             hotels = result.data.hotels;
-        } else if (Array.isArray(result)) {
-            hotels = result;
+        } else if (result.body && result.body.hotels && Array.isArray(result.body.hotels)) {
+            hotels = result.body.hotels;
+        } else if (result.body && result.body.data && result.body.data.hotels && Array.isArray(result.body.data.hotels)) {
+            hotels = result.body.data.hotels;
         }
 
         if (hotels.length > 0) {
@@ -347,7 +400,7 @@ function displayResults(result) {
                 <summary style="cursor: pointer; color: #555;">Technical Details</summary>
                 <pre style="margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px; overflow-x: auto; white-space: pre-wrap; font-size: 12px;">
                     Error: ${error.message}
-                    Data: ${JSON.stringify(result, null, 2)}
+                    Data: ${JSON.stringify(result, null, 2).substring(0, 2000)}...
                 </pre>
             </details>
         `;
@@ -360,6 +413,42 @@ function setupFormListeners() {
     if (!form) {
         console.error('Form element not found. Make sure you have a form with class="form-grid".');
         return;
+    }
+    
+    // Set today as the minimum date for check-in
+    const today = new Date();
+    const tomorrow = new Date(today);
+    tomorrow.setDate(tomorrow.getDate() + 1);
+    
+    const formatDate = (date) => {
+        const yyyy = date.getFullYear();
+        const mm = String(date.getMonth() + 1).padStart(2, '0');
+        const dd = String(date.getDate()).padStart(2, '0');
+        return `${yyyy}-${mm}-${dd}`;
+    };
+    
+    const checkinInput = document.getElementById('checkin');
+    const checkoutInput = document.getElementById('checkout');
+    
+    if (checkinInput) {
+        checkinInput.min = formatDate(today);
+        checkinInput.addEventListener('change', () => {
+            if (checkoutInput) {
+                // Set minimum checkout date to day after checkin
+                const newMinCheckout = new Date(checkinInput.value);
+                newMinCheckout.setDate(newMinCheckout.getDate() + 1);
+                checkoutInput.min = formatDate(newMinCheckout);
+                
+                // If current checkout date is before new min, update it
+                if (new Date(checkoutInput.value) <= new Date(checkinInput.value)) {
+                    checkoutInput.value = formatDate(newMinCheckout);
+                }
+            }
+        });
+    }
+    
+    if (checkoutInput && !checkoutInput.min) {
+        checkoutInput.min = formatDate(tomorrow);
     }
     
     form.addEventListener('submit', async (e) => {
@@ -380,10 +469,10 @@ function setupFormListeners() {
         // Validate dates
         const checkinDate = new Date(checkin);
         const checkoutDate = new Date(checkout);
-        const today = new Date();
-        today.setHours(0, 0, 0, 0);
+        const currentDate = new Date();
+        currentDate.setHours(0, 0, 0, 0);
         
-        if (checkinDate < today) {
+        if (checkinDate < currentDate) {
             alert('Check-in date cannot be in the past.');
             return;
         }
@@ -402,8 +491,8 @@ function setupFormListeners() {
         // Prepare the data to send to the webhook
         const formData = {
             destination: destination,
-            checkin: checkin,
-            checkout: checkout,
+            checkin: formatDate(checkinDate),  // Ensure consistent date format
+            checkout: formatDate(checkoutDate), // Ensure consistent date format
             travellers: parseInt(travellers) // Convert to integer for consistency
         };
 
@@ -444,8 +533,10 @@ function setupFormListeners() {
     });
 }
 
-// Optional: Debug function to help identify issues with form elements
+// Improved debug function with more detailed information
 function debugFormElements() {
+    console.log('=== DEBUGGING FORM ELEMENTS ===');
+    
     const formElements = {
         destination: document.getElementById('destination'),
         checkin: document.getElementById('checkin'),
@@ -465,8 +556,21 @@ function debugFormElements() {
         }
         
         const style = window.getComputedStyle(element);
-        console.log(`${name}: exists=${!!element}, display=${style.display}, visibility=${style.visibility}, height=${style.height}`);
+        console.log(`${name}:`, {
+            exists: true,
+            display: style.display,
+            visibility: style.visibility,
+            height: style.height,
+            width: style.width,
+            position: style.position,
+            value: element.value || 'N/A',
+            eventListeners: element.onclick ? 'Has click handler' : 'No click handler'
+        });
     }
+
+    console.log('Current URL:', window.location.href);
+    console.log('Webhook URL:', WEBHOOK_URL);
+    console.log('=== END DEBUGGING ===');
 }
 
 // Call debug function after page load to help with troubleshooting
