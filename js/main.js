@@ -36,7 +36,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadingIndicator.style.borderRadius = '6px';
     loadingIndicator.style.backgroundColor = '#f5f5f5';
     loadingIndicator.style.textAlign = 'center';
-    loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait (5 seconds).</p>';
+    loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait (2 minutes).</p>';
     document.querySelector('.booking-card').appendChild(loadingIndicator);
 });
 
@@ -56,7 +56,7 @@ document.addEventListener('visibilitychange', () => {
     } else if (!document.hidden && isProcessing && currentRequest) {
         console.log('Tab is visible, resuming or retrying processing...');
         const loadingIndicator = document.getElementById('loadingIndicator');
-        loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait (5 seconds).</p>';
+        loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait (2 minutes).</p>';
         retryProcessing(currentRequest);
     }
 });
@@ -85,7 +85,7 @@ async function processRequest(formData, maxAttempts = 3) {
     while (attempts < maxAttempts) {
         try {
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 5000); // 5-second timeout for fetch
+            const timeoutId = setTimeout(() => controller.abort(), 300000); // 5-minute timeout for fetch (300 seconds)
 
             const response = await fetch(WEBHOOK_URL, {
                 method: 'POST',
@@ -102,11 +102,11 @@ async function processRequest(formData, maxAttempts = 3) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
 
-            // Wait for 5 seconds before processing the response
+            // Wait for 2 minutes before processing the response
             await new Promise(resolve => {
                 const timeout = setTimeout(() => {
                     resolve();
-                }, 5000); // 5-second delay
+                }, 120000); // 2-minute delay (120 seconds)
 
                 // Ensure the timeout continues even if the tab is hidden
                 const checkInterval = setInterval(() => {
@@ -278,7 +278,8 @@ function displayResults(result) {
             // Display raw response or detailed message if no hotels are found
             resultsContainer.style.backgroundColor = '#fff3cd'; // Light yellow for warnings
             resultsContainer.innerHTML = `
-                <p style="color: #856404;">Here are the results:</p>
+                <p style="color: #856404;">No hotels found or invalid response format. 
+                Check the console for the full response or verify the Make.com setup.</p>
                 <pre style="margin-top: 10px; padding: 10px; background: #f5f5f5; border-radius: 4px; overflow-x: auto; white-space: pre-wrap;">
                     ${JSON.stringify(result, null, 2) || 'No response data available.'}
                 </pre>
