@@ -41,10 +41,11 @@
 
                 <div class="form-group">
                     <label for="travellers">Travellers</label>
-                    <select id="travellers" required data-test="travellers-dropdown">
+                    <select id="travellers" required data-test="travellers-dropdown" class="travellers-select">
                         <option value="">Select</option>
                         <!-- JavaScript will populate options from 1 to 100 -->
                     </select>
+                    <p id="travellers-error" style="color: red; display: none;">Error: Travellers dropdown could not be loaded. Please check JavaScript or refresh the page.</p>
                 </div>
 
                 <button type="submit" class="submit-btn">Search Hotels</button>
@@ -53,5 +54,15 @@
     </div>
 
     <script src="js/main.js"></script>
+    <script>
+        // Fallback to show error if JavaScript fails to load
+        document.addEventListener('DOMContentLoaded', () => {
+            const travellersSelect = document.getElementById('travellers');
+            const travellersError = document.getElementById('travellers-error');
+            if (!travellersSelect || travellersSelect.options.length <= 1) {
+                travellersError.style.display = 'block';
+            }
+        });
+    </script>
 </body>
 </html>
