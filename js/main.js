@@ -1,8 +1,14 @@
 // Populate travellers dropdown with options from 1 to 100
 document.addEventListener('DOMContentLoaded', () => {
     const travellersSelect = document.getElementById('travellers');
+    const travellersError = document.getElementById('travellers-error');
     if (travellersSelect) { // Ensure the element exists
         try {
+            // Clear any existing options except the default
+            while (travellersSelect.options.length > 1) {
+                travellersSelect.remove(1);
+            }
+            // Populate with options from 1 to 100
             for (let i = 1; i <= 100; i++) {
                 const option = document.createElement('option');
                 option.value = i;
@@ -12,9 +18,17 @@ document.addEventListener('DOMContentLoaded', () => {
             console.log('Travellers dropdown populated successfully with 100 options.');
         } catch (error) {
             console.error('Error populating travellers dropdown:', error);
+            if (travellersError) {
+                travellersError.style.display = 'block';
+                travellersError.textContent = `Error: Travellers dropdown could not be loaded. Please check JavaScript or refresh the page. Details: ${error.message}`;
+            }
         }
     } else {
         console.error('Travellers select element not found in the DOM. Check index.html for the <select> with id="travellers".');
+        if (travellersError) {
+            travellersError.style.display = 'block';
+            travellersError.textContent = 'Error: Travellers dropdown element not found. Please verify index.html.';
+        }
     }
 
     // Create a results container to display the webhook response
