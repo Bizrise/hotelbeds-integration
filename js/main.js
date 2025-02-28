@@ -18,11 +18,17 @@ function populateTravellersDropdown() {
     
     if (!travellersSelect) {
         console.error('Travellers select element not found in the DOM. Check index.html for the <select> with id="travellers".');
+        const travellersError = document.getElementById('travellers-error');
+        const travellersErrorDetails = document.getElementById('travellers-error-details');
+        if (travellersError && travellersErrorDetails) {
+            travellersError.style.display = 'block';
+            travellersErrorDetails.textContent = 'Travellers select element missing in DOM.';
+        }
         return;
     }
     
     // Clear existing options
-    travellersSelect.innerHTML = '';
+    travellersSelect.innerHTML = '<option value="">Select</option>';
     
     // Add options from 1 to 20
     for (let i = 1; i <= 20; i++) {
@@ -45,6 +51,12 @@ function populateTravellersDropdown() {
     travellersSelect.style.border = '1px solid #ccc';
     
     console.log('Travellers dropdown populated successfully with 20 options.');
+    
+    // Hide any error message if successful
+    const travellersError = document.getElementById('travellers-error');
+    if (travellersError) {
+        travellersError.style.display = 'none';
+    }
 }
 
 // Create results container and loading indicator
@@ -77,7 +89,7 @@ function createResultsContainer() {
         loadingIndicator.style.borderRadius = '6px';
         loadingIndicator.style.backgroundColor = '#f5f5f5';
         loadingIndicator.style.textAlign = 'center';
-        loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait.</p>';
+        loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait (2 minutes).</p>';
         bookingCard.appendChild(loadingIndicator);
     }
 }
@@ -217,7 +229,9 @@ async function processRequest(formData, maxAttempts = 3) {
                 if (!result || (
                     !Array.isArray(result) && 
                     !Array.isArray(result.hotels) && 
-                    (!result.data || !Array.isArray(result.data.hotels))
+                    (!result.data || !Array.isArray(result.data.hotels)) &&
+                    (!result.body || !Array.isArray(result.body.hotels)) &&
+                    (!result.body || !result.body.data || !Array.isArray(result.body.data.hotels))
                 )) {
                     return {
                         error: 'Invalid response format received from the hotel search API',
@@ -226,7 +240,21 @@ async function processRequest(formData, maxAttempts = 3) {
                     };
                 }
                 
-                return result;
+                // Normalize the hotel data structure
+                let hotels = [];
+                if (Array.isArray(result)) {
+                    hotels = result;
+                } else if (result.hotels && Array.isArray(result.hotels)) {
+                    hotels = result.hotels;
+                } else if (result.data && result.data.hotels && Array.isArray(result.data.hotels)) {
+                    hotels = result.data.hotels;
+                } else if (result.body && result.body.hotels && Array.isArray(result.body.hotels)) {
+                    hotels = result.body.hotels;
+                } else if (result.body && result.body.data && result.body.data.hotels && Array.isArray(result.body.data.hotels)) {
+                    hotels = result.body.data.hotels;
+                }
+
+                return { hotels };
                 
             } catch (parseError) {
                 console.error('Response parsing error:', parseError);
@@ -267,7 +295,7 @@ async function processRequest(formData, maxAttempts = 3) {
     };
 }
 
-// Function to display results on the webpage in a Booking.com-inspired format
+// Function to display results on the webpages in a Booking.com-inspired format
 function displayResults(result) {
     const resultsContainer = document.getElementById('resultsContainer');
     const loadingIndicator = document.getElementById('loadingIndicator');
