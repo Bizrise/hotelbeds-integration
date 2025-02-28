@@ -2,6 +2,7 @@
 document.addEventListener('DOMContentLoaded', () => {
     const travellersSelect = document.getElementById('travellers');
     const travellersError = document.getElementById('travellers-error');
+    const travellersErrorDetails = document.getElementById('travellers-error-details');
     if (travellersSelect) { // Ensure the element exists
         try {
             // Clear any existing options except the default
@@ -16,18 +17,19 @@ document.addEventListener('DOMContentLoaded', () => {
                 travellersSelect.appendChild(option);
             }
             console.log('Travellers dropdown populated successfully with 100 options.');
+            if (travellersError) travellersError.style.display = 'none'; // Hide error if successful
         } catch (error) {
             console.error('Error populating travellers dropdown:', error);
-            if (travellersError) {
+            if (travellersError && travellersErrorDetails) {
                 travellersError.style.display = 'block';
-                travellersError.textContent = `Error: Travellers dropdown could not be loaded. Please check JavaScript or refresh the page. Details: ${error.message}`;
+                travellersErrorDetails.textContent = `JavaScript error: ${error.message}`;
             }
         }
     } else {
         console.error('Travellers select element not found in the DOM. Check index.html for the <select> with id="travellers".');
-        if (travellersError) {
+        if (travellersError && travellersErrorDetails) {
             travellersError.style.display = 'block';
-            travellersError.textContent = 'Error: Travellers dropdown element not found. Please verify index.html.';
+            travellersErrorDetails.textContent = 'Travellers select element missing in DOM.';
         }
     }
 
@@ -325,16 +327,14 @@ function displayResults(result) {
                 const hotelImage = `https://via.placeholder.com/300x200?text=${encodeURIComponent(hotelName)}`;
 
                 resultsContainer.innerHTML += `
-                    <div style="margin-top: 15px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        <div style="display: flex; gap: 15px;">
-                            <img src="${hotelImage}" alt="${hotelName}" style="width: 300px; height: 200px; object-fit: cover; border-radius: 4px;">
-                            <div style="flex: 1;">
-                                <h4 style="color: #003580; margin-bottom: 10px;">${index + 1}. ${hotelName} (Code: ${hotelCode})</h4>
-                                <p style="margin-bottom: 8px;"><strong>Location:</strong> ${location}</p>
-                                <p style="margin-bottom: 8px;"><strong>Price:</strong> ${price}</p>
-                                <p style="margin-bottom: 8px;"><strong>Cancellation Policy:</strong> ${cancellationPolicy}</p>
-                                <p style="margin-bottom: 8px;"><strong>Rate Key:</strong> ${rateKey}</p>
-                            </div>
+                    <div class="hotel-result">
+                        <img src="${hotelImage}" alt="${hotelName}" class="hotel-image">
+                        <div class="hotel-details">
+                            <h4>${index + 1}. ${hotelName} (Code: ${hotelCode})</h4>
+                            <p><strong>Location:</strong> ${location}</p>
+                            <p><strong>Price:</strong> ${price}</p>
+                            <p><strong>Cancellation Policy:</strong> ${cancellationPolicy}</p>
+                            <p><strong>Rate Key:</strong> ${rateKey}</p>
                         </div>
                     </div>
                 `;
@@ -371,16 +371,14 @@ function displayResults(result) {
                 const hotelImage = `https://via.placeholder.com/300x200?text=${encodeURIComponent(hotelName)}`;
 
                 resultsContainer.innerHTML += `
-                    <div style="margin-top: 15px; padding: 15px; border: 1px solid #ddd; border-radius: 8px; background: white; box-shadow: 0 2px 4px rgba(0,0,0,0.1);">
-                        <div style="display: flex; gap: 15px;">
-                            <img src="${hotelImage}" alt="${hotelName}" style="width: 300px; height: 200px; object-fit: cover; border-radius: 4px;">
-                            <div style="flex: 1;">
-                                <h4 style="color: #003580; margin-bottom: 10px;">${index + 1}. ${hotelName} (Code: ${hotelCode})</h4>
-                                <p style="margin-bottom: 8px;"><strong>Location:</strong> ${location}</p>
-                                <p style="margin-bottom: 8px;"><strong>Price:</strong> ${price}</p>
-                                <p style="margin-bottom: 8px;"><strong>Cancellation Policy:</strong> ${cancellationPolicy}</p>
-                                <p style="margin-bottom: 8px;"><strong>Rate Key:</strong> ${rateKey}</p>
-                            </div>
+                    <div class="hotel-result">
+                        <img src="${hotelImage}" alt="${hotelName}" class="hotel-image">
+                        <div class="hotel-details">
+                            <h4>${index + 1}. ${hotelName} (Code: ${hotelCode})</h4>
+                            <p><strong>Location:</strong> ${location}</p>
+                            <p><strong>Price:</strong> ${price}</p>
+                            <p><strong>Cancellation Policy:</strong> ${cancellationPolicy}</p>
+                            <p><strong>Rate Key:</strong> ${rateKey}</p>
                         </div>
                     </div>
                 `;
