@@ -88,18 +88,18 @@ function createResultsContainer() {
         bookingCard.appendChild(resultsContainer);
     }
     
-    // Create loading indicator if it doesn't exist
+    // Create loading indicator if it doesn't exist, initially hidden
     let loadingIndicator = document.getElementById('loadingIndicator');
     if (!loadingIndicator) {
         loadingIndicator = document.createElement('div');
         loadingIndicator.id = 'loadingIndicator';
-        loadingIndicator.style.display = 'none';
+        loadingIndicator.style.display = 'none'; // Ensure it's hidden by default
         loadingIndicator.style.marginTop = '20px';
         loadingIndicator.style.padding = '15px';
         loadingIndicator.style.borderRadius = '6px';
         loadingIndicator.style.backgroundColor = '#f5f5f5';
         loadingIndicator.style.textAlign = 'center';
-        loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait (2 minutes).</p>';
+        loadingIndicator.innerHTML = '<p style="color: #0077ff;">Searching for hotels... Please wait (5 minutes).</p>';
         bookingCard.appendChild(loadingIndicator);
     }
 }
@@ -148,7 +148,7 @@ function retryProcessing(requestData) {
         });
 }
 
-// Improved function to process the request and analyze long string data
+// Improved function to process the request and analyze long string data, waiting longer for Make.com
 async function processRequest(formData, maxAttempts = 3) {
     let attempts = 0;
 
@@ -157,11 +157,11 @@ async function processRequest(formData, maxAttempts = 3) {
             const loadingIndicator = document.getElementById('loadingIndicator');
             if (loadingIndicator) {
                 loadingIndicator.innerHTML = `<p style="color: #0077ff;">Searching for hotels... Attempt ${attempts + 1}/${maxAttempts}</p>`;
-                loadingIndicator.style.display = 'block';
+                loadingIndicator.style.display = 'block'; // Show only after form submission
             }
             
             const controller = new AbortController();
-            const timeoutId = setTimeout(() => controller.abort(), 300000); // 5-minute timeout for fetch
+            const timeoutId = setTimeout(() => controller.abort(), 600000); // Extended to 10-minute timeout for fetch (600 seconds)
 
             if (loadingIndicator) {
                 loadingIndicator.innerHTML = '<p style="color: #0077ff;">Connecting to hotel database... Please wait.</p>';
@@ -183,6 +183,32 @@ async function processRequest(formData, maxAttempts = 3) {
             if (!response.ok) {
                 throw new Error(`HTTP error! status: ${response.status}`);
             }
+
+            if (loadingIndicator) {
+                loadingIndicator.innerHTML = '<p style="color: #0077ff;">Waiting for Make.com to process... Please wait (5 minutes).</p>';
+            }
+            
+            // Wait for 5 minutes (300,000 ms) to ensure Make.com completes
+            await new Promise(resolve => {
+                const timeout = setTimeout(() => {
+                    resolve();
+                }, 300000); // 5-minute delay (300 seconds)
+
+                // Ensure the timeout continues even if the tab is hidden
+                const checkInterval = setInterval(() => {
+                    if (document.hidden) {
+                        console.log('Tab is hidden, keeping timeout alive...');
+                    } else {
+                        clearInterval(checkInterval);
+                    }
+                }, 1000);
+
+                // Clean up intervals when resolved
+                resolve(() => {
+                    clearTimeout(timeout);
+                    clearInterval(checkInterval);
+                });
+            });
 
             if (loadingIndicator) {
                 loadingIndicator.innerHTML = '<p style="color: #0077ff;">Processing results... Almost done!</p>';
@@ -283,7 +309,7 @@ function analyzeAndStructureLongString(text) {
         if (cleanedResponse === 'Accepted' || cleanedResponse.trim() === '') {
             return { 
                 error: 'Invalid response format received from the hotel search API',
-                rawResponse: 'Accepted',
+                rawStatus: 'Accepted',
                 details: 'The API acknowledged the request but did not return hotel data. Please check Make.com configuration.'
             };
         }
@@ -418,12 +444,12 @@ function displayResults(result) {
             </div>
         `;
         
-        if (result.rawResponse) {
+        if (result.rawResponse || result.rawStatus) {
             resultsContainer.innerHTML += `
                 <details style="margin-top: 10px;">
                     <summary style="cursor: pointer; color: #555;">Technical Details (for debugging)</summary>
                     <pre>
-                        ${result.rawResponse}
+                        ${result.rawResponse || result.rawStatus}
                     </pre>
                 </details>
             `;
