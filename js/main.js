@@ -1,4 +1,4 @@
-// Populate travellers dropdown with options from 1 to 100
+// Populate travellers dropdown with options from 1 to 20
 document.addEventListener('DOMContentLoaded', () => {
     const travellersSelect = document.getElementById('travellers');
     const travellersError = document.getElementById('travellers-error');
@@ -9,14 +9,14 @@ document.addEventListener('DOMContentLoaded', () => {
             while (travellersSelect.options.length > 1) {
                 travellersSelect.remove(1);
             }
-            // Populate with options from 1 to 100
-            for (let i = 1; i <= 100; i++) {
+            // Populate with options from 1 to 20
+            for (let i = 1; i <= 20; i++) {
                 const option = document.createElement('option');
                 option.value = i;
                 option.textContent = `${i} Traveller${i > 1 ? 's' : ''}`;
                 travellersSelect.appendChild(option);
             }
-            console.log('Travellers dropdown populated successfully with 100 options.');
+            console.log('Travellers dropdown populated successfully with 20 options.');
             if (travellersError) travellersError.style.display = 'none'; // Hide error if successful
         } catch (error) {
             console.error('Error populating travellers dropdown:', error);
