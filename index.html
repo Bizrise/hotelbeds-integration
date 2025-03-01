@@ -24,9 +24,29 @@
                     <input type="date" id="checkout" required>
                 </div>
                 <div class="form-group">
-                    <label for="travellers">Travellers</label>
+                    <label for="travellers">Number of Travellers</label>
                     <select id="travellers" required data-test="travellers-dropdown" class="travellers-select">
-                        <option value="">Select</option>
+                        <option value="">Select Number of Travellers</option>
+                        <option value="1">1 Traveller</option>
+                        <option value="2">2 Travellers</option>
+                        <option value="3">3 Travellers</option>
+                        <option value="4">4 Travellers</option>
+                        <option value="5">5 Travellers</option>
+                        <option value="6">6 Travellers</option>
+                        <option value="7">7 Travellers</option>
+                        <option value="8">8 Travellers</option>
+                        <option value="9">9 Travellers</option>
+                        <option value="10">10 Travellers</option>
+                        <option value="11">11 Travellers</option>
+                        <option value="12">12 Travellers</option>
+                        <option value="13">13 Travellers</option>
+                        <option value="14">14 Travellers</option>
+                        <option value="15">15 Travellers</option>
+                        <option value="16">16 Travellers</option>
+                        <option value="17">17 Travellers</option>
+                        <option value="18">18 Travellers</option>
+                        <option value="19">19 Travellers</option>
+                        <option value="20">20 Travellers</option>
                     </select>
                     <p id="travellers-error" class="error-message">Error: Travellers dropdown could not be loaded. Please check JavaScript or refresh the page. Details: <span id="travellers-error-details"></span></p>
                 </div>
@@ -36,25 +56,10 @@
                 <h3>Your Search Results:</h3>
             </div>
             <div id="loadingIndicator" class="loading-indicator">
-                <p>Searching for hotels... Please wait (2 minutes).</p>
+                <p>Searching for hotels... Please wait (5 minutes).</p>
             </div>
         </div>
     </div>
     <script src="js/main.js"></script>
-    <script>
-        // Fallback to show error if JavaScript fails to load
-        document.addEventListener('DOMContentLoaded', () => {
-            const travellersSelect = document.getElementById('travellers');
-            const travellersError = document.getElementById('travellers-error');
-            const travellersErrorDetails = document.getElementById('travellers-error-details');
-            if (!travellersSelect || travellersSelect.options.length <= 1) {
-                if (travellersError && travellersErrorDetails) {
-                    travellersError.style.display = 'block';
-                    travellersErrorDetails.textContent = 'Travellers select element missing or not populated.';
-                }
-                console.error('Travellers dropdown failed to load on DOM load. Check JavaScript or file paths.');
-            }
-        });
-    </script>
 </body>
 </html>
