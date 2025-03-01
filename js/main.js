@@ -7,6 +7,12 @@ document.addEventListener('DOMContentLoaded', () => {
     if (loadingIndicator && loadingIndicator.style.display !== 'none') {
         loadingIndicator.style.display = 'none';
     }
+    // Check and hide travellers error message if dropdown is loaded
+    const travellersSelect = document.getElementById('travellers');
+    const travellersError = document.getElementById('travellers-error');
+    if (travellersSelect && travellersSelect.options.length > 1 && travellersError) {
+        travellersError.style.display = 'none';
+    }
 });
 
 // Webhook URL for backend integration with Make.com
@@ -681,9 +687,11 @@ function setupFormListeners() {
 
         const loadingIndicator = document.getElementById('loadingIndicator');
         const resultsContainer = document.getElementById('resultsContainer');
+        const travellersError = document.getElementById('travellers-error');
         
         if (loadingIndicator) loadingIndicator.style.display = 'block';
         if (resultsContainer) resultsContainer.style.display = 'none';
+        if (travellersError) travellersError.style.display = 'none'; // Hide error on form submission
 
         try {
             const result = await processRequest(formData);
